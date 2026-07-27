@@ -449,6 +449,10 @@ class MainNavigationViewModel(
     onTabSelected(MainNavigationListLocation.STORIES)
   }
 
+  fun onTicketsSelected() {
+    onTabSelected(MainNavigationListLocation.TICKETS)
+  }
+
   private fun onTabSelected(destination: MainNavigationListLocation) {
     viewModelScope.launch {
       val currentTab = internalMainNavigationState.value.currentListLocation

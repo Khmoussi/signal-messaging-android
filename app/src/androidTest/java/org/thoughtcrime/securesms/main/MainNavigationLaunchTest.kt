@@ -27,6 +27,7 @@ import org.signal.core.models.media.Media
 import org.thoughtcrime.securesms.MainActivity
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.calls.log.CallLogFragment
+import org.thoughtcrime.securesms.tickets.list.TicketsFragment
 import org.thoughtcrime.securesms.conversation.ConversationArgs
 import org.thoughtcrime.securesms.conversation.ConversationIntents
 import org.thoughtcrime.securesms.conversation.v2.ConversationFragment
@@ -737,6 +738,7 @@ class MainNavigationLaunchTest {
     MainNavigationListLocation.ARCHIVE -> ConversationListArchiveFragment::class.java
     MainNavigationListLocation.CALLS -> CallLogFragment::class.java
     MainNavigationListLocation.STORIES -> StoriesLandingFragment::class.java
+    MainNavigationListLocation.TICKETS -> TicketsFragment::class.java
   }
 
   private fun awaitListFragment(launched: LaunchedActivity, location: MainNavigationListLocation) {

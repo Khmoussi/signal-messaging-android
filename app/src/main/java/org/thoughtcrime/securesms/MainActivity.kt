@@ -145,6 +145,7 @@ import org.thoughtcrime.securesms.devicetransfer.olddevice.OldDeviceExitActivity
 import org.thoughtcrime.securesms.groups.ui.creategroup.CreateGroupActivity
 import org.thoughtcrime.securesms.keyvalue.SignalStore
 import org.thoughtcrime.securesms.lock.v2.CreateSvrPinActivity
+import org.thoughtcrime.securesms.main.EmptyDetailScreen
 import org.thoughtcrime.securesms.main.MainBottomChrome
 import org.thoughtcrime.securesms.main.MainBottomChromeCallback
 import org.thoughtcrime.securesms.main.MainBottomChromeState
@@ -180,6 +181,8 @@ import org.thoughtcrime.securesms.starred.StarredMessagesActivity
 import org.thoughtcrime.securesms.stories.Stories
 import org.thoughtcrime.securesms.stories.landing.StoriesLandingFragment
 import org.thoughtcrime.securesms.stories.storiesNavEntries
+import org.thoughtcrime.securesms.tickets.create.NewTicketActivity
+import org.thoughtcrime.securesms.tickets.list.TicketsFragment
 import org.thoughtcrime.securesms.util.AppStartup
 import org.thoughtcrime.securesms.util.CachedInflater
 import org.thoughtcrime.securesms.util.CommunicationActions
@@ -400,6 +403,7 @@ class MainActivity :
           MainNavigationListLocation.ARCHIVE -> toolbarViewModel.presentToolbarForConversationListArchiveFragment()
           MainNavigationListLocation.CALLS -> toolbarViewModel.presentToolbarForCallLogFragment()
           MainNavigationListLocation.STORIES -> toolbarViewModel.presentToolbarForStoriesLandingFragment()
+          MainNavigationListLocation.TICKETS -> toolbarViewModel.presentToolbarForTicketsFragment()
         }
       }
 
@@ -659,6 +663,15 @@ class MainActivity :
                       modifier = Modifier.fillMaxSize()
                     )
                   }
+
+                  MainNavigationListLocation.TICKETS -> {
+                    val state = key(destination) { rememberFragmentState() }
+                    AndroidFragment(
+                      clazz = TicketsFragment::class.java,
+                      fragmentState = state,
+                      modifier = Modifier.fillMaxSize()
+                    )
+                  }
                 }
 
                 MainBottomChrome(
@@ -711,6 +724,10 @@ class MainActivity :
                   ),
                   entryProvider = entryProvider { storiesNavEntries() }
                 )
+              }
+
+              MainNavigationListLocation.TICKETS -> {
+                EmptyDetailScreen()
               }
             }
           },
@@ -862,6 +879,7 @@ class MainActivity :
           mainNavigationViewModel.onStoriesSelected()
         }
       }
+      MainNavigationListLocation.TICKETS -> mainNavigationViewModel.onTicketsSelected()
 
       null -> Unit
     }
@@ -1278,6 +1296,10 @@ class MainActivity :
       startActivity(NewCallActivity.createIntent(this@MainActivity))
     }
 
+    override fun onNewTicketClick() {
+      startActivity(NewTicketActivity.createIntent(this@MainActivity))
+    }
+
     override fun onCameraClick(destination: MainNavigationListLocation) {
       onCameraClick(destination, false)
     }
@@ -1331,6 +1353,7 @@ class MainActivity :
         MainNavigationListLocation.CALLS -> mainNavigationViewModel.onCallsSelected()
         MainNavigationListLocation.STORIES -> mainNavigationViewModel.onStoriesSelected()
         MainNavigationListLocation.ARCHIVE -> mainNavigationViewModel.onArchiveSelected()
+        MainNavigationListLocation.TICKETS -> mainNavigationViewModel.onTicketsSelected()
       }
     }
   }

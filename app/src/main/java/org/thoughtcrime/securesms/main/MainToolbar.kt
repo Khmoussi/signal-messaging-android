@@ -474,6 +474,7 @@ private fun PrimaryToolbar(
           MainNavigationListLocation.CHATS -> ChatDropdownItems(state, callback, dismiss)
           MainNavigationListLocation.CALLS -> CallDropdownItems(state.callFilter, callback, dismiss)
           MainNavigationListLocation.STORIES -> StoryDropDownItems(callback, dismiss)
+          MainNavigationListLocation.TICKETS -> Unit
         }
       }
     }

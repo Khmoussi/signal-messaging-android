@@ -6926,8 +6926,88 @@
     <string name="ConversationListTabs__calls">Calls</string>
     <!-- Label for Stories tab in home app screen -->
     <string name="ConversationListTabs__stories">Stories</string>
+    <!-- Tab label for Tickets -->
+    <string name="ConversationListTabs__tickets">Tickets</string>
     <!-- String for counts above 99 in conversation list tabs -->
     <string name="ConversationListTabs__99p">99+</string>
+    <!-- Tickets list empty state title -->
+    <string name="TicketsFragment__no_tickets">No tickets</string>
+    <!-- Tickets list empty state subtitle -->
+    <string name="TicketsFragment__no_tickets_subtitle">Create a ticket to start a structured discussion.</string>
+    <!-- Filter chip: all tickets -->
+    <string name="TicketsFragment__filter_all">All</string>
+    <!-- Filter chip: open tickets -->
+    <string name="TicketsFragment__filter_open">Open</string>
+    <!-- Filter chip: closed tickets -->
+    <string name="TicketsFragment__filter_closed">Closed</string>
+    <!-- Last activity label; %1$s is date/time -->
+    <string name="TicketsFragment__last_activity">Last activity: %1$s</string>
+    <!-- Created date label; %1$s is date -->
+    <string name="TicketsFragment__created">Created: %1$s</string>
+    <!-- FAB content description to create a ticket -->
+    <string name="TicketsFragment__create_ticket">Create ticket</string>
+    <!-- Ticket status open -->
+    <string name="Tickets__status_open">Open</string>
+    <!-- Ticket status closed -->
+    <string name="Tickets__status_closed">Closed</string>
+    <!-- Ticket priority low -->
+    <string name="Tickets__priority_low">Low</string>
+    <!-- Ticket priority medium -->
+    <string name="Tickets__priority_medium">Medium</string>
+    <!-- Ticket priority high -->
+    <string name="Tickets__priority_high">High</string>
+    <!-- Ticket priority urgent -->
+    <string name="Tickets__priority_urgent">Urgent</string>
+    <!-- Create ticket screen title -->
+    <string name="NewTicketActivity__title">Create Ticket</string>
+    <!-- Cancel create ticket -->
+    <string name="NewTicketActivity__cancel">Cancel</string>
+    <!-- Department field -->
+    <string name="NewTicketActivity__department">Department</string>
+    <!-- Location field -->
+    <string name="NewTicketActivity__location">Location</string>
+    <!-- Priority field -->
+    <string name="NewTicketActivity__priority">Priority</string>
+    <!-- Description field -->
+    <string name="NewTicketActivity__description">Description</string>
+    <!-- Description required error -->
+    <string name="NewTicketActivity__description_required">Description is required</string>
+    <!-- Optional participants section -->
+    <string name="NewTicketActivity__participants_optional">Participants (optional)</string>
+    <!-- Attachments placeholder -->
+    <string name="NewTicketActivity__attachments_placeholder">Attachments (coming soon)</string>
+    <!-- Submit ticket -->
+    <string name="NewTicketActivity__submit">Submit Ticket</string>
+    <!-- Back from ticket discussion -->
+    <string name="TicketDiscussion__back">Back</string>
+    <!-- Overflow actions -->
+    <string name="TicketDiscussion__actions">Ticket actions</string>
+    <!-- Participants dialog title -->
+    <string name="TicketDiscussion__participants">Participants</string>
+    <!-- Admin label suffix -->
+    <string name="TicketDiscussion__admin">Admin</string>
+    <!-- Add participant action -->
+    <string name="TicketDiscussion__add_participant">Add participant</string>
+    <!-- Close ticket action -->
+    <string name="TicketDiscussion__close_ticket">Close ticket</string>
+    <!-- Reopen ticket action -->
+    <string name="TicketDiscussion__reopen_ticket">Reopen ticket</string>
+    <!-- Transfer administration action -->
+    <string name="TicketDiscussion__transfer_admin">Transfer administration</string>
+    <!-- Message composer hint -->
+    <string name="TicketDiscussion__message_hint">Type a message</string>
+    <!-- Send message -->
+    <string name="TicketDiscussion__send">Send</string>
+    <!-- Closed ticket read-only banner -->
+    <string name="TicketDiscussion__read_only">This ticket is closed and read-only.</string>
+    <!-- Created on label; %1$s is date -->
+    <string name="TicketDiscussion__created_on">Created %1$s</string>
+    <!-- Meta line; %1$s department, %2$s location, %3$s priority -->
+    <string name="TicketDiscussion__meta">%1$s · %2$s · %3$s</string>
+    <!-- No transfer candidates -->
+    <string name="TicketDiscussion__no_transfer_candidates">No other participants to transfer to.</string>
+    <!-- No more participants to add -->
+    <string name="TicketDiscussion__no_more_participants">No more people to add.</string>
     <!-- Menu item on stories landing page -->
     <string name="StoriesLandingFragment__story_privacy">Story privacy</string>
     <!-- Title for "My Stories" row item in Stories landing page -->

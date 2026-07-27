@@ -81,6 +81,10 @@ enum class MainNavigationListLocation(
   STORIES(
     label = R.string.ConversationListTabs__stories,
     icon = R.raw.stories_28
+  ),
+  TICKETS(
+    label = R.string.ConversationListTabs__tickets,
+    icon = R.raw.chats_28
   );
 
   val isChatsTab: Boolean
@@ -126,6 +130,7 @@ fun MainNavigationBar(
         MainNavigationListLocation.CHATS -> state.chatsCount
         MainNavigationListLocation.CALLS -> state.callsCount
         MainNavigationListLocation.STORIES -> state.storiesCount
+        MainNavigationListLocation.TICKETS -> 0
       }
 
       val selected = state.currentListLocation == destination
@@ -285,6 +290,7 @@ private fun BoxScope.NavigationRailCountIndicator(
       MainNavigationListLocation.CHATS -> state.chatsCount
       MainNavigationListLocation.CALLS -> state.callsCount
       MainNavigationListLocation.STORIES -> state.storiesCount
+      MainNavigationListLocation.TICKETS -> 0
     }
   }
 

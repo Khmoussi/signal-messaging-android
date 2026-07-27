@@ -40,6 +40,7 @@ interface MainBottomChromeCallback : MainFloatingActionButtonsCallback {
   object Empty : MainBottomChromeCallback {
     override fun onNewChatClick() = Unit
     override fun onNewCallClick() = Unit
+    override fun onNewTicketClick() = Unit
     override fun onCameraClick(destination: MainNavigationListLocation) = Unit
     override fun onMegaphoneVisible(megaphone: Megaphone) = Unit
     override fun onSnackbarDismissed() = Unit

@@ -98,6 +98,10 @@ class MainToolbarViewModel : ViewModel() {
     setToolbarMode(MainToolbarMode.FULL, destination = MainNavigationListLocation.CALLS)
   }
 
+  fun presentToolbarForTicketsFragment() {
+    setToolbarMode(MainToolbarMode.FULL, destination = MainNavigationListLocation.TICKETS)
+  }
+
   fun presentToolbarForMultiselect() {
     setToolbarMode(MainToolbarMode.ACTION_MODE)
   }

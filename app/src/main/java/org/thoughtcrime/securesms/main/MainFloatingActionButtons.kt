@@ -51,11 +51,13 @@ private val ACTION_BUTTON_SPACING = 16.dp
 interface MainFloatingActionButtonsCallback {
   fun onNewChatClick()
   fun onNewCallClick()
+  fun onNewTicketClick()
   fun onCameraClick(destination: MainNavigationListLocation)
 
   object Empty : MainFloatingActionButtonsCallback {
     override fun onNewChatClick() = Unit
     override fun onNewCallClick() = Unit
+    override fun onNewTicketClick() = Unit
     override fun onCameraClick(destination: MainNavigationListLocation) = Unit
   }
 }
@@ -106,6 +108,7 @@ fun MainFloatingActionButtons(
         onNewChatClick = callback::onNewChatClick,
         onCameraClick = callback::onCameraClick,
         onNewCallClick = callback::onNewCallClick,
+        onNewTicketClick = callback::onNewTicketClick,
         elevation = shadowElevation
       )
     }
@@ -168,13 +171,15 @@ private fun PrimaryActionButton(
   elevation: Dp,
   onNewChatClick: () -> Unit = {},
   onCameraClick: (MainNavigationListLocation) -> Unit = {},
-  onNewCallClick: () -> Unit = {}
+  onNewCallClick: () -> Unit = {},
+  onNewTicketClick: () -> Unit = {}
 ) {
   val onClick = remember(destination) {
     when (destination) {
       MainNavigationListLocation.ARCHIVE -> onNewChatClick
       MainNavigationListLocation.CHATS -> onNewChatClick
       MainNavigationListLocation.CALLS -> onNewCallClick
+      MainNavigationListLocation.TICKETS -> onNewTicketClick
       MainNavigationListLocation.STORIES -> {
         { onCameraClick(destination) }
       }
@@ -190,6 +195,7 @@ private fun PrimaryActionButton(
           MainNavigationListLocation.ARCHIVE -> CoreUiR.drawable.symbol_edit_24 to R.string.conversation_list_fragment__fab_content_description
           MainNavigationListLocation.CHATS -> CoreUiR.drawable.symbol_edit_24 to R.string.conversation_list_fragment__fab_content_description
           MainNavigationListLocation.CALLS -> R.drawable.symbol_phone_plus_24 to R.string.CallLogFragment__start_a_new_call
+          MainNavigationListLocation.TICKETS -> CoreUiR.drawable.symbol_edit_24 to R.string.TicketsFragment__create_ticket
           MainNavigationListLocation.STORIES -> CoreUiR.drawable.symbol_camera_24 to R.string.conversation_list_fragment__open_camera_description
         }
 
@@ -261,6 +267,10 @@ private fun MainFloatingActionButtonsNavigationRailPreview() {
       override fun onNewCallClick() {
         currentDestination = MainNavigationListLocation.CHATS
       }
+
+      override fun onNewTicketClick() {
+        currentDestination = MainNavigationListLocation.TICKETS
+      }
     }
   }
 
@@ -289,6 +299,10 @@ private fun MainFloatingActionButtonsNavigationBarPreview() {
 
       override fun onNewCallClick() {
         currentDestination = MainNavigationListLocation.CHATS
+      }
+
+      override fun onNewTicketClick() {
+        currentDestination = MainNavigationListLocation.TICKETS
       }
     }
   }
