@@ -2,6 +2,8 @@
 
 Catalog of external hosts and API paths used by Signal Android.
 
+**Architecture / self-host context:** see [`COMPANION_SERVICES.md`](COMPANION_SERVICES.md) (what `chat` / `storage` / `cdn*` are, local vs prod, tickets vs GroupsV2). Local URL switch: [`LOCAL_SERVER.md`](LOCAL_SERVER.md).
+
 **Sources:** `app/build.gradle.kts`, `SignalServiceNetworkAccess.kt`, `PushServiceSocket.java`, `lib/network/.../api/*`, `lib/libsignal-service/.../api/*`.
 
 **Transport note:** Most chat endpoints are **HTTP-over-WebSocket** (`WebSocketRequestMessage` on `wss://chat.signal.org/v1/websocket/`), not plain REST. Registration, GroupsV2, and storage use OkHttp **REST**. Some attachment/username/multi-recipient paths are implemented in **libsignal** (JNI) without path string literals in this repo.

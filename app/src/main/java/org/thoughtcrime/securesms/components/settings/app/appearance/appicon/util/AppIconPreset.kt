@@ -26,7 +26,11 @@ enum class AppIconPreset(private val componentName: String, @DrawableRes val ico
   WAVES(".RoutingActivityAltWaves", R.drawable.ic_app_icon_waves_top_preview, R.string.app_icon_label_waves);
 
   fun getComponentName(context: Context): ComponentName {
-    val applicationContext = context.applicationContext
-    return ComponentName(applicationContext, "org.thoughtcrime.securesms" + componentName)
+    // applicationId (install package) may differ from Java/manifest namespace.
+    // Shortcuts and alternate icons must target the real activity class name.
+    return ComponentName(
+      context.applicationContext.packageName,
+      "org.thoughtcrime.securesms$componentName"
+    )
   }
 }

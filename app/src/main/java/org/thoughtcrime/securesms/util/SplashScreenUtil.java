@@ -23,10 +23,10 @@ public final class SplashScreenUtil {
 
     switch (theme) {
       case LIGHT:
-        activity.getSplashScreen().setSplashScreenTheme(R.style.Theme_Signal_DayNight_NoActionBar_LightSplash);
+        activity.getSplashScreen().setSplashScreenTheme(R.style.Theme_Signal_Starting_LightSplash);
         break;
       case DARK:
-        activity.getSplashScreen().setSplashScreenTheme(R.style.Theme_Signal_DayNight_NoActionBar_DarkSplash);
+        activity.getSplashScreen().setSplashScreenTheme(R.style.Theme_Signal_Starting_DarkSplash);
         break;
       case SYSTEM:
         activity.getSplashScreen().setSplashScreenTheme(Resources.ID_NULL);

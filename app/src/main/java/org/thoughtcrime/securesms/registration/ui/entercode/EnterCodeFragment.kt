@@ -385,6 +385,11 @@ class EnterCodeFragment : LoggingFragment(R.layout.fragment_registration_enter_c
   }
 
   private fun moveToCaptcha() {
+    if (org.thoughtcrime.securesms.BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
+      sharedViewModel.setCaptchaResponse(org.thoughtcrime.securesms.registration.fragments.RegistrationConstants.NOOP_CAPTCHA_TOKEN)
+      sharedViewModel.submitCaptchaToken(requireContext())
+      return
+    }
     findNavController().safeNavigate(EnterCodeFragmentDirections.actionRequestCaptcha())
     ThreadUtil.postToMain { sharedViewModel.setInProgress(false) }
   }

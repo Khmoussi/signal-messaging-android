@@ -6,6 +6,7 @@
 package org.thoughtcrime.securesms.components.webrtc.v2
 
 import android.content.res.Configuration
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement.spacedBy
 import androidx.compose.foundation.layout.Box
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -28,11 +28,10 @@ import androidx.compose.ui.draw.BlurredEdgeTreatment
 import androidx.compose.ui.draw.blur
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.signal.core.ui.compose.NightPreview
@@ -116,10 +115,12 @@ fun IncomingCallScreen(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(callTypePadding)
       ) {
-        Icon(
-          imageVector = ImageVector.vectorResource(R.drawable.ic_signal_logo_small),
+        Image(
+          painter = painterResource(R.drawable.ic_kadi_logo),
           contentDescription = null,
-          modifier = Modifier.padding(end = 6.dp)
+          modifier = Modifier
+            .size(18.dp)
+            .padding(end = 6.dp)
         )
 
         Text(

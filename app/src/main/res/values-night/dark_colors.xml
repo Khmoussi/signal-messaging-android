@@ -13,6 +13,8 @@
     <color name="pulse_incoming_message">@color/transparent_white_15</color>
     <color name="pulse_outgoing_message">@color/transparent_white_25</color>
 
+    <color name="kadi_splash_background">@color/kadi_brand_navy</color>
+
     <color name="signal_background_primary">@color/signal_colorBackground</color>
     <color name="signal_background_secondary">@color/signal_colorSurface1</color>
     <color name="signal_background_tertiary">@color/core_grey_90</color>

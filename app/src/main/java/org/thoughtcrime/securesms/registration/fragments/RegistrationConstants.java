@@ -13,4 +13,7 @@ public final class RegistrationConstants {
   public static final String TERMS_AND_CONDITIONS_URL = "https://signal.org/legal";
   public static final String SIGNAL_CAPTCHA_SCHEME    = "signalcaptcha://";
 
+  /** Accepted by self-hosted Signal-Server CaptchaClient.noop(). */
+  public static final String NOOP_CAPTCHA_TOKEN = "noop.noop.registration.noop";
+
 }

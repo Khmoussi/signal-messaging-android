@@ -753,7 +753,6 @@ class MainActivity :
     val content: View = findViewById(android.R.id.content)
     content.viewTreeObserver.addOnPreDrawListener(object : ViewTreeObserver.OnPreDrawListener {
       override fun onPreDraw(): Boolean {
-        // Use pre draw listener to delay drawing frames till conversation list is ready
         return if (onFirstRender) {
           content.viewTreeObserver.removeOnPreDrawListener(this)
           true

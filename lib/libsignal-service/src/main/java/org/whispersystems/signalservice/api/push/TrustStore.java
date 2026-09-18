@@ -15,5 +15,12 @@ import java.io.InputStream;
 public interface TrustStore {
   public InputStream getKeyStoreInputStream();
   public String getKeyStorePassword();
+
+  /**
+   * When true, TLS should trust the platform CA store instead of {@link #getKeyStoreInputStream()}.
+   */
+  default boolean useSystemCaStore() {
+    return false;
+  }
 }
 

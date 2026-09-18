@@ -1049,7 +1049,7 @@ class PhoneNumberEntryViewModelTest {
   // ==================== Pre-existing Registration Data (RRP) Tests ====================
 
   @Test
-  fun `PhoneNumberSubmitted with matching preExistingRegistrationData registers with RRP and navigates to PinEntryForSvrRestore`() = runTest {
+  fun `PhoneNumberSubmitted with matching preExistingRegistrationData registers with RRP and completes registration without PIN`() = runTest {
     val preExistingData = mockk<PreExistingRegistrationData>(relaxed = true) {
       coEvery { e164 } returns "+15551234567"
       coEvery { registrationLockEnabled } returns false
@@ -1068,15 +1068,13 @@ class PhoneNumberEntryViewModelTest {
 
     viewModel.applyEvent(initialState, PhoneNumberEntryScreenEvents.PhoneNumberConfirmed, parentEventEmitter, stateEmitter)
 
+    coVerify { mockRepository.recordPinOptOut() }
     assertThat(emittedEvents.first()).isInstanceOf<RegistrationFlowEvent.Registered>()
-    assertThat(emittedEvents[1])
-      .isInstanceOf<RegistrationFlowEvent.NavigateToScreen>()
-      .prop(RegistrationFlowEvent.NavigateToScreen::route)
-      .isInstanceOf<RegistrationRoute.PinEntryForSvrRestore>()
+    assertThat(emittedEvents[1]).isEqualTo(RegistrationFlowEvent.RegistrationComplete)
   }
 
   @Test
-  fun `PhoneNumberSubmitted with matching preExistingRegistrationData navigates to PinCreate when not storage capable`() = runTest {
+  fun `PhoneNumberSubmitted with matching preExistingRegistrationData completes registration without PIN when not storage capable`() = runTest {
     val preExistingData = mockk<PreExistingRegistrationData>(relaxed = true) {
       coEvery { e164 } returns "+15551234567"
       coEvery { registrationLockEnabled } returns false
@@ -1095,11 +1093,9 @@ class PhoneNumberEntryViewModelTest {
 
     viewModel.applyEvent(initialState, PhoneNumberEntryScreenEvents.PhoneNumberConfirmed, parentEventEmitter, stateEmitter)
 
+    coVerify { mockRepository.recordPinOptOut() }
     assertThat(emittedEvents.first()).isInstanceOf<RegistrationFlowEvent.Registered>()
-    assertThat(emittedEvents[1])
-      .isInstanceOf<RegistrationFlowEvent.NavigateToScreen>()
-      .prop(RegistrationFlowEvent.NavigateToScreen::route)
-      .isInstanceOf<RegistrationRoute.PinCreate>()
+    assertThat(emittedEvents[1]).isEqualTo(RegistrationFlowEvent.RegistrationComplete)
   }
 
   @Test(expected = IllegalStateException::class)

@@ -63,7 +63,7 @@ class SignalServiceNetworkAccess(context: Context) {
     )
 
     private fun String.stripProtocol(): String {
-      return this.removePrefix("https://")
+      return this.removePrefix("https://").removePrefix("http://")
     }
 
     private const val COUNTRY_CODE_EGYPT = 20
@@ -168,7 +168,11 @@ class SignalServiceNetworkAccess(context: Context) {
     }
   }
 
-  private val serviceTrustStore: TrustStore = SignalServiceTrustStore(context)
+  private val serviceTrustStore: TrustStore = if (BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
+    SystemCaTrustStore()
+  } else {
+    SignalServiceTrustStore(context)
+  }
   private val gTrustStore: TrustStore = DomainFrontingTrustStore(context)
   private val fTrustStore: TrustStore = DomainFrontingDigicertTrustStore(context)
 
@@ -269,11 +273,18 @@ class SignalServiceNetworkAccess(context: Context) {
   )
 
   val uncensoredConfiguration: SignalServiceConfiguration = SignalServiceConfiguration(
-    signalServiceUrls = arrayOf(SignalServiceUrl(BuildConfig.SIGNAL_URL, serviceTrustStore)),
+    signalServiceUrls = arrayOf(
+      if (BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER && BuildConfig.SIGNAL_URL.startsWith("http://")) {
+        // LocalWhisperServerService speaks plain HTTP; OkHttp needs CLEARTEXT (not RESTRICTED_TLS).
+        SignalServiceUrl(BuildConfig.SIGNAL_URL, null, serviceTrustStore, ConnectionSpec.CLEARTEXT)
+      } else {
+        SignalServiceUrl(BuildConfig.SIGNAL_URL, serviceTrustStore)
+      }
+    ),
     signalCdnUrlMap = mapOf(
-      0 to arrayOf(SignalCdnUrl(BuildConfig.SIGNAL_CDN_URL, serviceTrustStore)),
-      2 to arrayOf(SignalCdnUrl(BuildConfig.SIGNAL_CDN2_URL, serviceTrustStore)),
-      3 to arrayOf(SignalCdnUrl(BuildConfig.SIGNAL_CDN3_URL, serviceTrustStore))
+      0 to arrayOf(selfHostedOrDefaultCdn(BuildConfig.SIGNAL_CDN_URL)),
+      2 to arrayOf(selfHostedOrDefaultCdn(BuildConfig.SIGNAL_CDN2_URL)),
+      3 to arrayOf(selfHostedOrDefaultCdn(BuildConfig.SIGNAL_CDN3_URL))
     ),
     signalStorageUrls = arrayOf(SignalStorageUrl(BuildConfig.STORAGE_URL, serviceTrustStore)),
     signalCdsiUrls = arrayOf(SignalCdsiUrl(BuildConfig.SIGNAL_CDSI_URL, serviceTrustStore)),
@@ -328,6 +339,15 @@ class SignalServiceNetworkAccess(context: Context) {
 
   fun isCountryCodeCensoredByDefault(countryCode: Int): Boolean {
     return defaultCensoredCountryCodes.contains(countryCode)
+  }
+
+  /** CDN base for self-hosted in-server media (same host as chat) or production CDN. */
+  private fun selfHostedOrDefaultCdn(url: String): SignalCdnUrl {
+    return if (BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER && url.startsWith("http://")) {
+      SignalCdnUrl(url, null, serviceTrustStore, ConnectionSpec.CLEARTEXT)
+    } else {
+      SignalCdnUrl(url, serviceTrustStore)
+    }
   }
 
   private fun buildGConfiguration(

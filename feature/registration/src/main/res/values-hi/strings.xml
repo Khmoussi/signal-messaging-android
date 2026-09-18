@@ -4,8 +4,7 @@
     <string name="AccountLockedScreen__learn_more_url" translatable="false">https://support.signal.org/hc/articles/360007059792</string>
 
     <string name="RegistrationActivity_take_privacy_with_you_be_yourself_in_every_message">प्राइवेसी रहे हमेशा आपके साथ।\nबिना किसी फ़िक्र के अपने अंदाज़ में भेजें हर मैसेज।</string>
-    <!-- Non-English translations should use "Signal is a nonprofit" instead, dropping the 501c3 reference. -->
-    <string name="RegistrationActivity_terms_and_privacy">Signal एक गैर-लाभकारी संस्था है\nनियम और गोपनीयता नीति</string>
+    <string name="RegistrationActivity_terms_and_privacy">Terms &amp; Privacy Policy</string>
     <string name="RegistrationActivity_continue">जारी रखें</string>
     <!-- Screen title for restoring or transfering account -->
     <string name="registration_activity__restore_or_transfer">रीस्टोर या ट्रांसफ़र करें</string>

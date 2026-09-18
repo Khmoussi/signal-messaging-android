@@ -5,7 +5,11 @@ import androidx.annotation.WorkerThread
 import org.signal.contacts.SystemContactsRepository
 import org.signal.core.util.Stopwatch
 import org.signal.core.util.logging.Log
+import org.signal.core.models.ServiceId.ACI
+import org.signal.core.models.ServiceId.PNI
+import org.signal.libsignal.zkgroup.profiles.ProfileKey
 import org.signal.network.NetworkResult
+import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.contacts.sync.FuzzyPhoneNumberHelper.InputResult
 import org.thoughtcrime.securesms.contacts.sync.FuzzyPhoneNumberHelper.OutputResult
 import org.thoughtcrime.securesms.database.RecipientTable.CdsV2Result
@@ -17,6 +21,7 @@ import org.thoughtcrime.securesms.recipients.Recipient
 import org.thoughtcrime.securesms.recipients.RecipientId
 import org.thoughtcrime.securesms.util.RemoteConfig
 import org.thoughtcrime.securesms.util.SignalE164Util
+import org.signal.core.models.ServiceId
 import org.whispersystems.signalservice.api.cds.CdsiV2Service
 import org.whispersystems.signalservice.api.push.exceptions.CdsiInvalidTokenException
 import org.whispersystems.signalservice.api.push.exceptions.CdsiResourceExhaustedException
@@ -26,7 +31,8 @@ import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 /**
- * Performs a CDS refresh using CDSv2.
+ * Performs a CDS refresh using CDSv2, or the self-host local directory API when
+ * [BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER] is true.
  */
 object ContactDiscoveryRefreshV2 {
 
@@ -91,39 +97,15 @@ object ContactDiscoveryRefreshV2 {
   @WorkerThread
   @Synchronized
   fun lookupE164(e164: String): ContactDiscovery.LookupResult? {
-    val result = SignalNetwork.cdsApi.getRegisteredUsers(
+    val response = fetchRegisteredUsers(
       previousE164s = emptySet(),
       newE164s = setOf(e164),
       serviceIds = SignalDatabase.recipients.getAllServiceIdProfileKeyPairs(),
       token = Optional.empty(),
       timeoutMs = 10_000,
-      libsignalNetwork = AppDependencies.libsignalNetwork
-    ) {
-      Log.i(TAG, "Ignoring token for one-off lookup.")
-    }
-
-    val response = when (result) {
-      is NetworkResult.Success -> result.result
-      is NetworkResult.StatusCodeError -> {
-        when (val e = result.exception) {
-          is CdsiResourceExhaustedException -> {
-            Log.w(TAG, "CDS resource exhausted! Can try again in ${e.retryAfterSeconds} seconds.")
-            SignalStore.misc.cdsBlockedUtil = System.currentTimeMillis() + e.retryAfterSeconds.seconds.inWholeMilliseconds
-            throw e
-          }
-
-          is CdsiInvalidTokenException -> {
-            Log.w(TAG, "We did not provide a token, but still got a token error! Unexpected, but ignoring.")
-            throw e
-          }
-
-          else -> throw e
-        }
-      }
-
-      is NetworkResult.NetworkError -> throw result.exception
-      is NetworkResult.ApplicationError -> throw result.throwable
-    }
+      isPartialRefresh = true,
+      onToken = { Log.i(TAG, "Ignoring token for one-off lookup.") }
+    )
 
     return response.results[e164]?.let { item ->
       val id = SignalDatabase.recipients.processIndividualCdsLookup(e164 = e164, aci = item.aci.orElse(null), pni = item.pni)
@@ -169,50 +151,27 @@ object ContactDiscoveryRefreshV2 {
 
     stopwatch.split("preamble")
 
-    val result = SignalNetwork.cdsApi.getRegisteredUsers(
+    val response = fetchRegisteredUsers(
       previousE164s = previousE164s,
       newE164s = newE164s,
       serviceIds = SignalDatabase.recipients.getAllServiceIdProfileKeyPairs(),
       token = Optional.ofNullable(token),
       timeoutMs = timeoutMs,
-      libsignalNetwork = AppDependencies.libsignalNetwork
-    ) { tokenToSave ->
-      stopwatch.split("network-pre-token")
-      if (!isPartialRefresh) {
-        SignalStore.misc.cdsToken = tokenToSave
-        SignalDatabase.cds.updateAfterFullCdsQuery(previousE164s + newE164s, allE164s + newE164s)
-        Log.d(TAG, "Token saved!")
-      } else {
-        SignalDatabase.cds.updateAfterPartialCdsQuery(newE164s)
-        Log.d(TAG, "Ignoring token.")
-      }
-      stopwatch.split("cds-db")
-    }
-
-    val response: CdsiV2Service.Response = when (result) {
-      is NetworkResult.Success -> result.result
-      is NetworkResult.StatusCodeError -> {
-        when (val e = result.exception) {
-          is CdsiResourceExhaustedException -> {
-            Log.w(TAG, "CDS resource exhausted! Can try again in ${e.retryAfterSeconds} seconds.")
-            SignalStore.misc.cdsBlockedUtil = System.currentTimeMillis() + e.retryAfterSeconds.seconds.inWholeMilliseconds
-            throw e
-          }
-
-          is CdsiInvalidTokenException -> {
-            Log.w(TAG, "Our token was invalid! Only thing we can do now is clear our local state :(")
-            SignalStore.misc.cdsToken = null
-            SignalDatabase.cds.clearAll()
-            throw e
-          }
-
-          else -> throw e
+      isPartialRefresh = isPartialRefresh,
+      queryE164sForLocal = if (isPartialRefresh) newE164s else allE164s,
+      onToken = { tokenToSave ->
+        stopwatch.split("network-pre-token")
+        if (!isPartialRefresh) {
+          SignalStore.misc.cdsToken = tokenToSave
+          SignalDatabase.cds.updateAfterFullCdsQuery(previousE164s + newE164s, allE164s + newE164s)
+          Log.d(TAG, "Token saved!")
+        } else {
+          SignalDatabase.cds.updateAfterPartialCdsQuery(newE164s)
+          Log.d(TAG, "Ignoring token.")
         }
+        stopwatch.split("cds-db")
       }
-
-      is NetworkResult.NetworkError -> throw result.exception
-      is NetworkResult.ApplicationError -> throw result.throwable
-    }
+    )
 
     if (!isPartialRefresh && SignalStore.misc.isCdsBlocked) {
       Log.i(TAG, "Successfully made a request while blocked -- clearing blocked state.")
@@ -250,6 +209,89 @@ object ContactDiscoveryRefreshV2 {
     stopwatch.stop(TAG)
 
     return ContactDiscovery.RefreshResult(registeredIds, rewrites)
+  }
+
+  /**
+   * CDSI for production; authenticated chat `/v1/directory/local/lookup` for self-host MVP.
+   */
+  @Throws(IOException::class)
+  private fun fetchRegisteredUsers(
+    previousE164s: Set<String>,
+    newE164s: Set<String>,
+    serviceIds: Map<ServiceId, ProfileKey>,
+    token: Optional<ByteArray>,
+    timeoutMs: Long?,
+    isPartialRefresh: Boolean,
+    queryE164sForLocal: Set<String> = previousE164s + newE164s,
+    onToken: (ByteArray) -> Unit
+  ): CdsiV2Service.Response {
+    if (BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
+      return fetchViaLocalDirectory(e164s = queryE164sForLocal, isPartialRefresh = isPartialRefresh, onToken = onToken)
+    }
+
+    val result = SignalNetwork.cdsApi.getRegisteredUsers(
+      previousE164s = previousE164s,
+      newE164s = newE164s,
+      serviceIds = serviceIds,
+      token = token,
+      timeoutMs = timeoutMs,
+      libsignalNetwork = AppDependencies.libsignalNetwork,
+      tokenSaver = onToken
+    )
+
+    return when (result) {
+      is NetworkResult.Success -> result.result
+      is NetworkResult.StatusCodeError -> {
+        when (val e = result.exception) {
+          is CdsiResourceExhaustedException -> {
+            Log.w(TAG, "CDS resource exhausted! Can try again in ${e.retryAfterSeconds} seconds.")
+            SignalStore.misc.cdsBlockedUtil = System.currentTimeMillis() + e.retryAfterSeconds.seconds.inWholeMilliseconds
+            throw e
+          }
+
+          is CdsiInvalidTokenException -> {
+            Log.w(TAG, "Our token was invalid! Only thing we can do now is clear our local state :(")
+            SignalStore.misc.cdsToken = null
+            SignalDatabase.cds.clearAll()
+            throw e
+          }
+
+          else -> throw e
+        }
+      }
+
+      is NetworkResult.NetworkError -> throw result.exception
+      is NetworkResult.ApplicationError -> throw result.throwable
+    }
+  }
+
+  @Throws(IOException::class)
+  private fun fetchViaLocalDirectory(
+    e164s: Set<String>,
+    isPartialRefresh: Boolean,
+    onToken: (ByteArray) -> Unit
+  ): CdsiV2Service.Response {
+    Log.i(TAG, "Self-hosted server: using local directory lookup for ${e164s.size} number(s)")
+
+    val result = SignalNetwork.localDirectory.lookup(e164s)
+    val response = when (result) {
+      is NetworkResult.Success -> result.result
+      is NetworkResult.StatusCodeError -> throw result.exception
+      is NetworkResult.NetworkError -> throw result.exception
+      is NetworkResult.ApplicationError -> throw result.throwable
+    }
+
+    // Keep CDS bookkeeping happy so incremental refresh still works without a real CDSI token.
+    onToken(if (isPartialRefresh) ByteArray(0) else byteArrayOf(0x01))
+
+    val mapped = HashMap<String, CdsiV2Service.ResponseItem>(response.results.size)
+    for (entry in response.results) {
+      mapped[entry.e164] = CdsiV2Service.ResponseItem(
+        PNI.from(entry.pni),
+        Optional.of(ACI.from(entry.aci))
+      )
+    }
+    return CdsiV2Service.Response(mapped, e164s.size)
   }
 
   private fun hasCommunicatedWith(recipient: Recipient): Boolean {

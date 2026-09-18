@@ -27,6 +27,7 @@ import java.util.Objects;
 public class StorageUtil {
 
   private static final String PRODUCTION_PACKAGE_ID = "org.thoughtcrime.securesms";
+  private static final String KADI_PACKAGE_ID = "com.kadi.app";
 
   public static File getOrCreateBackupDirectory() throws NoExternalStorageException {
     File storage = Environment.getExternalStorageDirectory();
@@ -66,13 +67,15 @@ public class StorageUtil {
 
   public static File getBackupDirectory() throws NoExternalStorageException {
     File   storage   = Environment.getExternalStorageDirectory();
-    File   signal    = new File(storage, "Signal");
-    File   backups   = new File(signal, "Backups");
     String packageId = CoreUiDependencies.INSTANCE.getPackageId();
+    File   appRoot   = new File(storage, getBackupRootFolderName(packageId));
+    File   backups   = new File(appRoot, "Backups");
 
     //noinspection ConstantConditions
     if (packageId.startsWith(PRODUCTION_PACKAGE_ID + ".")) {
       backups = new File(backups, packageId.substring(PRODUCTION_PACKAGE_ID.length() + 1));
+    } else if (packageId.startsWith(KADI_PACKAGE_ID + ".")) {
+      backups = new File(backups, packageId.substring(KADI_PACKAGE_ID.length() + 1));
     }
 
     return backups;
@@ -80,15 +83,24 @@ public class StorageUtil {
 
   public static File getBackupV2Directory() throws NoExternalStorageException {
     File   storage   = Environment.getExternalStorageDirectory();
-    File   backups   = new File(storage, "Signal");
     String packageId = CoreUiDependencies.INSTANCE.getPackageId();
+    File   backups   = new File(storage, getBackupRootFolderName(packageId));
 
     //noinspection ConstantConditions
     if (packageId.startsWith(PRODUCTION_PACKAGE_ID + ".")) {
       backups = new File(storage, packageId.substring(PRODUCTION_PACKAGE_ID.length() + 1));
+    } else if (packageId.startsWith(KADI_PACKAGE_ID + ".")) {
+      backups = new File(storage, "Kadi-" + packageId.substring(KADI_PACKAGE_ID.length() + 1));
     }
 
     return backups;
+  }
+
+  private static String getBackupRootFolderName(@NonNull String packageId) {
+    if (PRODUCTION_PACKAGE_ID.equals(packageId) || packageId.startsWith(PRODUCTION_PACKAGE_ID + ".")) {
+      return "Signal";
+    }
+    return "Kadi";
   }
 
   public static @NonNull String getDisplayPath(@NonNull Context context, @NonNull Uri uri) {

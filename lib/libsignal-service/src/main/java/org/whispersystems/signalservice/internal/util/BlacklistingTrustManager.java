@@ -10,12 +10,15 @@ import org.whispersystems.signalservice.api.push.TrustStore;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.math.BigInteger;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -53,6 +56,12 @@ public class BlacklistingTrustManager implements X509TrustManager {
 
   public static TrustManager[] createFor(TrustStore trustStore) {
     try {
+      if (trustStore.useSystemCaStore()) {
+        TrustManagerFactory systemTmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
+        systemTmf.init((KeyStore) null);
+        return BlacklistingTrustManager.createFor(systemTmf.getTrustManagers());
+      }
+
       InputStream keyStoreInputStream = trustStore.getKeyStoreInputStream();
       KeyStore    keyStore            = KeyStore.getInstance("BKS");
 
@@ -85,7 +94,62 @@ public class BlacklistingTrustManager implements X509TrustManager {
       throws CertificateException
   {
     trustManager.checkServerTrusted(chain, authType);
+    assertNotBlacklisted(chain);
+  }
 
+  /**
+   * Hostname-aware trust check. Conscrypt discovers and invokes this via reflection when
+   * present. Required on Android when {@code network_security_config.xml} contains
+   * {@code <domain-config>} entries: the platform {@code RootTrustManager} rejects the
+   * 2-arg {@link #checkServerTrusted(X509Certificate[], String)} path with
+   * "Domain specific configurations require that hostname aware checkServerTrusted...".
+   */
+  @SuppressWarnings("unused")
+  public List<X509Certificate> checkServerTrusted(X509Certificate[] chain, String authType, String host)
+      throws CertificateException
+  {
+    List<X509Certificate> trusted = delegateCheckServerTrusted(chain, authType, host);
+    assertNotBlacklisted(chain);
+    return trusted;
+  }
+
+  @Override
+  public X509Certificate[] getAcceptedIssuers() {
+    return trustManager.getAcceptedIssuers();
+  }
+
+  private List<X509Certificate> delegateCheckServerTrusted(X509Certificate[] chain, String authType, String host)
+      throws CertificateException
+  {
+    try {
+      Method method = trustManager.getClass().getMethod(
+          "checkServerTrusted",
+          X509Certificate[].class,
+          String.class,
+          String.class
+      );
+      Object result = method.invoke(trustManager, chain, authType, host);
+      if (result instanceof List) {
+        @SuppressWarnings("unchecked")
+        List<X509Certificate> trusted = (List<X509Certificate>) result;
+        return trusted;
+      }
+      return Arrays.asList(chain);
+    } catch (NoSuchMethodException e) {
+      trustManager.checkServerTrusted(chain, authType);
+      return Arrays.asList(chain);
+    } catch (InvocationTargetException e) {
+      Throwable cause = e.getCause() != null ? e.getCause() : e;
+      if (cause instanceof CertificateException) {
+        throw (CertificateException) cause;
+      }
+      throw new CertificateException(cause);
+    } catch (ReflectiveOperationException e) {
+      throw new CertificateException(e);
+    }
+  }
+
+  private void assertNotBlacklisted(X509Certificate[] chain) throws CertificateException {
     for (X509Certificate certificate : chain) {
       for (Pair<String, BigInteger> blacklistedSerial : BLACKLIST) {
         if (certificate.getIssuerDN().getName().equals(blacklistedSerial.getFirst()) &&
@@ -95,11 +159,5 @@ public class BlacklistingTrustManager implements X509TrustManager {
         }
       }
     }
-
-  }
-
-  @Override
-  public X509Certificate[] getAcceptedIssuers() {
-    return trustManager.getAcceptedIssuers();
   }
 }

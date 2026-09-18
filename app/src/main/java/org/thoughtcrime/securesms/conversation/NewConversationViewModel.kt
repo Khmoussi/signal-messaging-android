@@ -39,6 +39,20 @@ class NewConversationViewModel : ViewModel() {
 
   private val contactsManagementRepo = ContactsManagementRepository(AppDependencies.application)
 
+  init {
+    // Self-host: prefetch registered users into local recipient DB so New Conversation lists them without typing.
+    if (org.thoughtcrime.securesms.BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
+      viewModelScope.launch {
+        try {
+          org.thoughtcrime.securesms.tickets.contacts.NetworkDirectoryRepository.search(query = null)
+          internalUiState.update { it.copy(shouldResetContactsList = true) }
+        } catch (e: Exception) {
+          Log.w(TAG, "Failed to prefetch network directory for new conversation", e)
+        }
+      }
+    }
+  }
+
   fun onSearchQueryChanged(query: String) {
     internalUiState.update { it.copy(searchQuery = query) }
   }

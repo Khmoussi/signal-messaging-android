@@ -5,17 +5,16 @@
 
 package org.thoughtcrime.securesms.main
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.vectorResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import org.thoughtcrime.securesms.R
 
@@ -29,10 +28,9 @@ fun EmptyDetailScreen() {
       .background(color = MaterialTheme.colorScheme.surface)
       .fillMaxSize()
   ) {
-    Icon(
-      imageVector = ImageVector.vectorResource(id = R.drawable.ic_signal_logo_large),
+    Image(
+      painter = painterResource(id = R.drawable.ic_kadi_logo),
       contentDescription = null,
-      tint = MaterialTheme.colorScheme.secondary.copy(alpha = 0.32f),
       modifier = Modifier
         .size(80.dp)
         .align(Alignment.Center)

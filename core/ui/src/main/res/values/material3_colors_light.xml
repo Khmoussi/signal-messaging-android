@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="signal_light_colorPrimary">#2C58C3</color>
-    <color name="signal_light_colorPrimaryContainer">#D2DFFB</color>
+    <color name="signal_light_colorPrimary">#1B6B45</color>
+    <color name="signal_light_colorPrimaryContainer">#D8F0E4</color>
     <color name="signal_light_colorSecondary">#586071</color>
-    <color name="signal_light_colorSecondaryContainer">#DCE5F9</color>
+    <color name="signal_light_colorSecondaryContainer">#E8F5EE</color>
     <color name="signal_light_colorSurface">#FBFCFF</color>
     <color name="signal_light_colorSurfaceVariant">#E7EBF3</color>
     <color name="signal_light_colorBackground">#FBFCFF</color>
     <color name="signal_light_colorError">#BA1B1B</color>
     <color name="signal_light_colorErrorContainer">#FFDAD4</color>
     <color name="signal_light_colorOnPrimary">#FFFFFF</color>
-    <color name="signal_light_colorOnPrimaryContainer">#051845</color>
+    <color name="signal_light_colorOnPrimaryContainer">#062816</color>
     <color name="signal_light_colorOnSecondary">#FFFFFF</color>
     <color name="signal_light_colorOnSecondaryContainer">#151D2C</color>
     <color name="signal_light_colorOnSurface">#1B1B1D</color>

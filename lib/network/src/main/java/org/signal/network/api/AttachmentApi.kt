@@ -11,7 +11,11 @@ import org.signal.libsignal.net.AuthMessagesService
 import org.signal.libsignal.net.RequestResult
 import org.signal.libsignal.net.UploadTooLargeException
 import org.signal.network.NetworkResult
+import org.signal.network.exceptions.PushNetworkException
+import org.signal.network.websocket.WebSocketRequestMessage
+import org.signal.network.websocket.get
 import org.whispersystems.signalservice.api.crypto.AttachmentCipherStreamUtil
+import org.whispersystems.signalservice.api.fromWebSocketRequest
 import org.whispersystems.signalservice.api.messages.SignalServiceAttachmentRemoteId
 import org.whispersystems.signalservice.api.messages.SignalServiceAttachmentStream
 import org.whispersystems.signalservice.api.websocket.SignalWebSocket
@@ -38,19 +42,66 @@ class AttachmentApi(
 
   /**
    * Gets a v4 attachment upload form, which provides the necessary information to upload an attachment.
+   *
+   * Prefers libsignal chat connection; falls back to OkHttp websocket GET
+   * `/v4/attachments/form/upload` for self-hosted builds that cannot use LibSignalChatConnection.
    */
   fun getAttachmentV4UploadForm(uploadSizeBytes: Long): RequestResult<AttachmentUploadForm, UploadTooLargeException> {
     return runBlocking {
-      authWebSocket.runCatchingWithChatConnection { chatConnection ->
-        AuthMessagesService(chatConnection).getUploadForm(uploadSizeBytes)
-      }.map { form ->
-        AttachmentUploadForm(
-          cdn = form.cdn,
-          key = form.key,
-          headers = form.headers,
-          signedUploadLocation = form.signedUploadUrl.toString()
+      when (
+        val result = authWebSocket.runCatchingWithChatConnection { chatConnection ->
+          AuthMessagesService(chatConnection).getUploadForm(uploadSizeBytes)
+        }
+      ) {
+        is RequestResult.Success -> RequestResult.Success(
+          AttachmentUploadForm(
+            cdn = result.result.cdn,
+            key = result.result.key,
+            headers = result.result.headers,
+            signedUploadLocation = result.result.signedUploadUrl.toString()
+          )
         )
+        is RequestResult.NonSuccess -> RequestResult.NonSuccess(result.error)
+        is RequestResult.RetryableNetworkError -> RequestResult.RetryableNetworkError(result.networkError, result.retryAfter)
+        is RequestResult.ApplicationError -> {
+          if (result.cause is UnsupportedOperationException) {
+            Log.i(TAG, "LibSignal chat connection unavailable; fetching attachment form over websocket")
+            getAttachmentV4UploadFormOverWebSocket(uploadSizeBytes)
+          } else {
+            RequestResult.ApplicationError(result.cause)
+          }
+        }
       }
+    }
+  }
+
+  /**
+   * GET /v4/attachments/form/upload?uploadLength=
+   * - 200: Success
+   * - 413: Upload too large
+   * - 429: Rate limited
+   */
+  private fun getAttachmentV4UploadFormOverWebSocket(uploadSizeBytes: Long): RequestResult<AttachmentUploadForm, UploadTooLargeException> {
+    val request = WebSocketRequestMessage.get("/v4/attachments/form/upload?uploadLength=$uploadSizeBytes")
+    return when (val networkResult = NetworkResult.fromWebSocketRequest(authWebSocket, request, AttachmentUploadForm::class)) {
+      is NetworkResult.Success -> RequestResult.Success(networkResult.result)
+      is NetworkResult.StatusCodeError -> {
+        Log.w(TAG, "Attachment form websocket failed: status=${networkResult.code} body=${networkResult.stringBody}")
+        when (networkResult.code) {
+          413 -> RequestResult.NonSuccess(
+            UploadTooLargeException(
+              "uploadLength=$uploadSizeBytes exceeds server maximum (HTTP 413): ${networkResult.stringBody}"
+            )
+          )
+          429 -> RequestResult.RetryableNetworkError(
+            PushNetworkException("Rate limited fetching attachment upload form"),
+            networkResult.retryAfter()?.inWholeSeconds?.let { java.time.Duration.ofSeconds(it) }
+          )
+          else -> RequestResult.ApplicationError(networkResult.exception)
+        }
+      }
+      is NetworkResult.NetworkError -> RequestResult.RetryableNetworkError(networkResult.exception)
+      is NetworkResult.ApplicationError -> RequestResult.ApplicationError(networkResult.throwable)
     }
   }
 

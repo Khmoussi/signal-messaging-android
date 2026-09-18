@@ -531,7 +531,7 @@ class VerificationCodeViewModelTest {
   }
 
   @Test
-  fun `CodeEntered with success registers account and navigates to PinCreate for new user`() = runTest {
+  fun `CodeEntered with success registers account and completes registration without PIN for new user`() = runTest {
     val sessionMetadata = createSessionMetadata(verified = true)
     val initialState = VerificationCodeState(
       sessionMetadata = sessionMetadata,
@@ -548,12 +548,10 @@ class VerificationCodeViewModelTest {
 
     viewModel.applyEvent(initialState, VerificationCodeScreenEvents.CodeEntered("123456"), stateEmitter)
 
+    coVerify { mockRepository.recordPinOptOut() }
     assertThat(emittedEvents).hasSize(2)
     assertThat(emittedEvents[0]).isInstanceOf<RegistrationFlowEvent.Registered>()
-    assertThat(emittedEvents[1])
-      .isInstanceOf<RegistrationFlowEvent.NavigateToScreen>()
-      .prop(RegistrationFlowEvent.NavigateToScreen::route)
-      .isInstanceOf<RegistrationRoute.PinCreate>()
+    assertThat(emittedEvents[1]).isEqualTo(RegistrationFlowEvent.RegistrationComplete)
   }
 
   @Test
@@ -617,12 +615,10 @@ class VerificationCodeViewModelTest {
 
     viewModel.applyEvent(initialState, VerificationCodeScreenEvents.CodeEntered("123456"), stateEmitter)
 
+    coVerify { mockRepository.recordPinOptOut() }
     assertThat(emittedEvents).hasSize(2)
     assertThat(emittedEvents[0]).isInstanceOf<RegistrationFlowEvent.Registered>()
-    assertThat(emittedEvents[1])
-      .isInstanceOf<RegistrationFlowEvent.NavigateToScreen>()
-      .prop(RegistrationFlowEvent.NavigateToScreen::route)
-      .isInstanceOf<RegistrationRoute.PinCreate>()
+    assertThat(emittedEvents[1]).isEqualTo(RegistrationFlowEvent.RegistrationComplete)
   }
 
   @Test

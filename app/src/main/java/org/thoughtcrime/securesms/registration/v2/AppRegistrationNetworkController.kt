@@ -427,6 +427,14 @@ class AppRegistrationNetworkController(
     return BuildConfig.SIGNAL_CAPTCHA_URL
   }
 
+  override fun noopCaptchaTokenOrNull(): String? {
+    return if (BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
+      "noop.noop.registration.noop"
+    } else {
+      null
+    }
+  }
+
   override suspend fun restoreMasterKeyFromSvr(
     svrCredentials: SvrCredentials,
     pin: String

@@ -23,6 +23,7 @@ import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.signal.core.util.logging.Log;
+import org.thoughtcrime.securesms.BuildConfig;
 import org.thoughtcrime.securesms.dependencies.AppDependencies;
 import org.thoughtcrime.securesms.gcm.FcmUtil;
 import org.thoughtcrime.securesms.jobmanager.Job;
@@ -113,7 +114,8 @@ public class FcmRefreshJob extends BaseJob {
         IncomingMessageObserver.stopForegroundService(context);
       }
 
-      if (SignalStore.settings().getForceWebsocketMode() == ForceWebsocketMode.ENABLED_AUTOMATICALLY) {
+      if (SignalStore.settings().getForceWebsocketMode() == ForceWebsocketMode.ENABLED_AUTOMATICALLY
+          && !BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
         Log.i(TAG, "FCM succeeded while in auto-enabled websocket mode. Reverting to disabled.");
         SignalStore.settings().setForceWebsocketMode(ForceWebsocketMode.DISABLED);
         IncomingMessageObserver.stopForegroundService(context);

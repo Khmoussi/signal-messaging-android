@@ -6308,10 +6308,10 @@
     <!--    Header for the screen that displays the licenses of the open-source software dependencies of the Signal app-->
     <string name="HelpSettingsFragment__licenses">Licence</string>
     <string name="HelpSettingsFragment__terms_amp_privacy_policy">Podmínky a zásady ochrany osobních údajů</string>
-    <string name="HelpFragment__copyright_signal_messenger">Copyright Signal Messenger</string>
+    <string name="HelpFragment__copyright_signal_messenger">Copyright Kadi</string>
     <string name="HelpFragment__licenced_under_the_agplv3">Licencováno pod GNU AGPLv3</string>
     <!-- Non-English translations should use "Signal is a nonprofit." instead, dropping the 501c3 reference. -->
-    <string name="HelpSettingsFragment__signal_is_a_501c3">Signal je nezisková organizace</string>
+    <string name="HelpSettingsFragment__signal_is_a_501c3">Secure messaging for teams</string>
 
     <!-- DataAndStorageSettingsFragment -->
     <string name="DataAndStorageSettingsFragment__media_quality">Kvalita médií</string>
@@ -6803,7 +6803,7 @@
     <!-- Third small text blurb on learn more sheet -->
     <string name="SubscribeLearnMoreBottomSheetDialogFragment__your_privacy_is_our_mission">Vaše soukromí je naším posláním</string>
     <!-- Fourth small text blurb on learn more sheet. Non-English translations should use "Signal is a nonprofit." instead, dropping the 501c3 reference. -->
-    <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_501c3">Signal je nezisková organizace.</string>
+    <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_501c3">Kadi helps your team stay connected securely.</string>
 
     <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_your_support">Díky za vaši podporu!</string>
     <!-- Subtext underneath the dialog title on the thanks sheet -->

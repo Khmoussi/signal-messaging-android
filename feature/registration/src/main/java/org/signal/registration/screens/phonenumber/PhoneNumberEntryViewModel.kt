@@ -279,11 +279,9 @@ class PhoneNumberEntryViewModel(
 
           parentEventEmitter(RegistrationFlowEvent.Registered(keyMaterial.accountEntropyPool, response.storageCapable))
 
-          if (response.storageCapable) {
-            parentEventEmitter.navigateTo(RegistrationRoute.PinEntryForSvrRestore)
-          } else {
-            parentEventEmitter.navigateTo(RegistrationRoute.PinCreate)
-          }
+          Log.i(TAG, "[Register] Skipping PIN setup for MVP; recording opt-out and completing registration.")
+          repository.recordPinOptOut()
+          parentEventEmitter(RegistrationFlowEvent.RegistrationComplete)
           return state
         }
         is RequestResult.NonSuccess -> {
@@ -365,11 +363,9 @@ class PhoneNumberEntryViewModel(
 
         parentEventEmitter(RegistrationFlowEvent.Registered(keyMaterial.accountEntropyPool, response.storageCapable))
 
-        if (response.storageCapable) {
-          parentEventEmitter.navigateTo(RegistrationRoute.PinEntryForSvrRestore)
-        } else {
-          parentEventEmitter.navigateTo(RegistrationRoute.PinCreate)
-        }
+        Log.i(TAG, "[LocalRestore] Skipping PIN setup for MVP; recording opt-out and completing registration.")
+        repository.recordPinOptOut()
+        parentEventEmitter(RegistrationFlowEvent.RegistrationComplete)
         state
       }
       is RequestResult.NonSuccess -> {
@@ -532,8 +528,7 @@ class PhoneNumberEntryViewModel(
     if (sessionMetadata.requestedInformation.contains("captcha")) {
       parentEventEmitter(RegistrationFlowEvent.SessionUpdated(sessionMetadata))
       parentEventEmitter(RegistrationFlowEvent.E164Chosen(e164))
-      parentEventEmitter.navigateTo(RegistrationRoute.Captcha(sessionMetadata))
-      return state
+      return navigateToCaptchaOrSubmitNoop(state.copy(sessionMetadata = sessionMetadata), sessionMetadata, parentEventEmitter)
     }
 
     if (!sessionMetadata.allowedToRequestCode && sessionMetadata.requestedInformation.isEmpty()) {
@@ -599,8 +594,7 @@ class PhoneNumberEntryViewModel(
     state = state.copy(sessionMetadata = sessionMetadata)
 
     if (sessionMetadata.requestedInformation.contains("captcha")) {
-      parentEventEmitter.navigateTo(RegistrationRoute.Captcha(sessionMetadata))
-      return state
+      return navigateToCaptchaOrSubmitNoop(state.copy(sessionMetadata = sessionMetadata), sessionMetadata, parentEventEmitter)
     }
 
     parentEventEmitter(RegistrationFlowEvent.SessionUpdated(sessionMetadata))
@@ -642,6 +636,11 @@ class PhoneNumberEntryViewModel(
     state = state.copy(sessionMetadata = sessionMetadata)
 
     if (sessionMetadata.requestedInformation.contains("captcha")) {
+      // Avoid infinite noop loops if the server still demands captcha after submission.
+      if (repository.getNoopCaptchaTokenOrNull() != null) {
+        Log.w(TAG, "Captcha still required after noop submission")
+        return state.copy(oneTimeEvent = OneTimeEvent.UnknownError)
+      }
       parentEventEmitter.navigateTo(RegistrationRoute.Captcha(sessionMetadata))
       return state
     }
@@ -700,6 +699,20 @@ class PhoneNumberEntryViewModel(
     parentEventEmitter(RegistrationFlowEvent.E164Chosen("+${inputState.countryCode}${inputState.nationalNumber}"))
     parentEventEmitter.navigateTo(RegistrationRoute.VerificationCodeEntry)
     return state
+  }
+
+  private suspend fun navigateToCaptchaOrSubmitNoop(
+    state: PhoneNumberEntryState,
+    sessionMetadata: NetworkController.SessionMetadata,
+    parentEventEmitter: (RegistrationFlowEvent) -> Unit
+  ): PhoneNumberEntryState {
+    val noopToken = repository.getNoopCaptchaTokenOrNull()
+    if (noopToken != null) {
+      Log.i(TAG, "Self-hosted server: auto-submitting noop captcha token")
+      return applyCaptchaCompleted(state.copy(sessionMetadata = sessionMetadata), noopToken, parentEventEmitter)
+    }
+    parentEventEmitter.navigateTo(RegistrationRoute.Captcha(sessionMetadata))
+    return state.copy(sessionMetadata = sessionMetadata)
   }
 
   private fun formatNumber(nationalNumber: String): String {

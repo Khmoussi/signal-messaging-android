@@ -108,6 +108,12 @@ interface NetworkController {
   fun getCaptchaUrl(): String
 
   /**
+   * When non-null, registration should auto-submit this token instead of opening the captcha WebView.
+   * Used for self-hosted servers that only accept the noop captcha scheme.
+   */
+  fun noopCaptchaTokenOrNull(): String? = null
+
+  /**
    * Attempts to restore the master key from SVR using the provided credentials and PIN.
    *
    * This is called when the user encounters a registration lock and needs to prove

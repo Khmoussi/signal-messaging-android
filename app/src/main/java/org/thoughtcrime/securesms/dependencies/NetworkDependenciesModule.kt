@@ -41,12 +41,16 @@ import org.thoughtcrime.securesms.net.StandardUserAgentInterceptor
 import org.thoughtcrime.securesms.payments.Payments
 import org.thoughtcrime.securesms.push.SignalServiceNetworkAccess
 import org.thoughtcrime.securesms.push.SignalServiceTrustStore
+import org.thoughtcrime.securesms.push.SystemCaTrustStore
+import org.thoughtcrime.securesms.BuildConfig
 import org.whispersystems.signalservice.api.SignalServiceAccountManager
 import org.whispersystems.signalservice.api.SignalServiceMessageReceiver
 import org.whispersystems.signalservice.api.SignalServiceMessageSender
 import org.whispersystems.signalservice.api.account.AccountApi
 import org.whispersystems.signalservice.api.donations.DonationsApi
 import org.whispersystems.signalservice.api.groupsv2.GroupsV2Operations
+import org.whispersystems.signalservice.api.tickets.TicketApi
+import org.whispersystems.signalservice.api.directory.LocalDirectoryApi
 import org.whispersystems.signalservice.api.keys.KeysApi
 import org.whispersystems.signalservice.api.message.MessageApi
 import org.whispersystems.signalservice.api.profiles.ProfileApi
@@ -235,6 +239,14 @@ class NetworkDependenciesModule(
     provider.provideDonationsApi(authWebSocket, unauthWebSocket)
   }
 
+  val ticketApi: TicketApi by lazy {
+    provider.provideTicketApi(authWebSocket)
+  }
+
+  val localDirectoryApi: LocalDirectoryApi by lazy {
+    provider.provideLocalDirectoryApi(authWebSocket)
+  }
+
   val svrBApi: SvrBApi by lazy {
     provider.provideSvrBApi(libsignalNetwork)
   }
@@ -254,7 +266,11 @@ class NetworkDependenciesModule(
     try {
       val baseClient = okHttpClient
       val sslContext = SSLContext.getInstance("TLS")
-      val trustStore: TrustStore = SignalServiceTrustStore(application)
+      val trustStore: TrustStore = if (BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
+        SystemCaTrustStore()
+      } else {
+        SignalServiceTrustStore(application)
+      }
       val trustManagers = BlacklistingTrustManager.createFor(trustStore)
 
       sslContext.init(null, trustManagers, null)

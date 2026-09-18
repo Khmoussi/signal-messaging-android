@@ -18,6 +18,7 @@ import org.signal.core.util.UptimeSleepTimer
 import org.signal.core.util.concurrent.SignalExecutors
 import org.signal.core.util.logging.Log
 import org.signal.storageservice.storage.protos.groups.local.DecryptedGroup
+import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.R
 import org.thoughtcrime.securesms.crypto.ReentrantSessionLock
 import org.thoughtcrime.securesms.database.SignalDatabase
@@ -155,7 +156,8 @@ class IncomingMessageObserver(
     MessageRetrievalThread().start()
 
     val registered = SignalStore.account.isRegistered && !TextSecurePreferences.isUnauthorizedReceived(context)
-    if (registered && (!SignalStore.account.fcmEnabled || SignalStore.settings.forceWebsocketMode.isEnabled)) {
+    // Self-host has no working FCM wake; keep the auth websocket (and its foreground service) alive.
+    if (registered && (!SignalStore.account.fcmEnabled || SignalStore.settings.forceWebsocketMode.isEnabled || BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER)) {
       SignalExecutors.UNBOUNDED.execute {
         if (!SafeForegroundService.start(context, ForegroundService::class.java)) {
           Log.w(TAG, "Unable to start foreground service for websocket!")
@@ -245,7 +247,7 @@ class IncomingMessageObserver(
     val fcmEnabled = SignalStore.account.fcmEnabled
     val hasNetwork = NetworkConstraint.isMet(context)
     val hasProxy = SignalStore.proxy.isProxyEnabled
-    val forceWebsocket = SignalStore.settings.forceWebsocketMode.isEnabled
+    val forceWebsocket = SignalStore.settings.forceWebsocketMode.isEnabled || BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER
     val websocketAlreadyOpen = isConnectionAvailable()
 
     val lastInteractionString = if (appVisibleSnapshot) "N/A" else timeIdle.toString() + " ms (" + (if (timeIdle < maxBackgroundTime) "within limit" else "over limit") + ")"
@@ -433,7 +435,11 @@ class IncomingMessageObserver(
       Log.i(TAG, "Initializing! (${this.hashCode()})")
       uncaughtExceptionHandler = this
 
-      sleepTimer = if (!SignalStore.account.fcmEnabled || SignalStore.settings.forceWebsocketMode.isEnabled) AlarmSleepTimer(context) else UptimeSleepTimer()
+      sleepTimer = if (!SignalStore.account.fcmEnabled || SignalStore.settings.forceWebsocketMode.isEnabled || BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
+        AlarmSleepTimer(context)
+      } else {
+        UptimeSleepTimer()
+      }
 
       canProcessMessages = !SignalStore.registration.restoreDecisionState.isDecisionPending
     }

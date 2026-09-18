@@ -81,10 +81,10 @@ private val typography = Typography().run {
 }
 
 private val lightColorScheme = lightColorScheme(
-  primary = Color(0xFF2C58C3),
-  primaryContainer = Color(0xFFD2DFFB),
+  primary = Color(0xFF1B6B45),
+  primaryContainer = Color(0xFFD8F0E4),
   secondary = Color(0xFF586071),
-  secondaryContainer = Color(0xFFDCE5F9),
+  secondaryContainer = Color(0xFFE8F5EE),
   surface = Color(0xFFFBFCFF),
   surfaceContainerLow = Color(0xFFF2F5F9),
   surfaceContainerHighest = Color(0xFFE7EBF3),
@@ -93,7 +93,7 @@ private val lightColorScheme = lightColorScheme(
   error = Color(0xFFBA1B1B),
   errorContainer = Color(0xFFFFDAD4),
   onPrimary = Color(0xFFFFFFFF),
-  onPrimaryContainer = Color(0xFF051845),
+  onPrimaryContainer = Color(0xFF062816),
   onSecondary = Color(0xFFFFFFFF),
   onSecondaryContainer = Color(0xFF151D2C),
   onSurface = Color(0xFF1B1B1D),
@@ -157,10 +157,10 @@ private val darkExtendedColors = ExtendedColors(
 )
 
 private val darkColorScheme = darkColorScheme(
-  primary = Color(0xFFB6C5FA),
-  primaryContainer = Color(0xFF464B5C),
+  primary = Color(0xFF7BC99A),
+  primaryContainer = Color(0xFF1E3D2E),
   secondary = Color(0xFFC1C6DD),
-  secondaryContainer = Color(0xFF414659),
+  secondaryContainer = Color(0xFF2A3D34),
   surface = Color(0xFF1B1C1F),
   surfaceContainerLow = Color(0xFF23242A),
   surfaceContainerHighest = Color(0xFF303133),
@@ -168,8 +168,8 @@ private val darkColorScheme = darkColorScheme(
   background = Color(0xFF1B1C1F),
   error = Color(0xFFFFB4A9),
   errorContainer = Color(0xFF930006),
-  onPrimary = Color(0xFF1E2438),
-  onPrimaryContainer = Color(0xFFDBE1FC),
+  onPrimary = Color(0xFF062816),
+  onPrimaryContainer = Color(0xFFD8F0E4),
   onSecondary = Color(0xFF2A3042),
   onSecondaryContainer = Color(0xFFDCE1F9),
   onSurface = Color(0xFFE2E1E5),

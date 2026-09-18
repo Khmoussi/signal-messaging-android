@@ -5,16 +5,30 @@
 
 package org.thoughtcrime.securesms.tickets.model
 
+import java.util.UUID
+
 enum class TicketStatus {
   OPEN,
-  CLOSED
+  CLOSED;
+
+  companion object {
+    fun fromServer(value: String): TicketStatus {
+      return entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: OPEN
+    }
+  }
 }
 
 enum class TicketPriority {
   LOW,
   MEDIUM,
   HIGH,
-  URGENT
+  URGENT;
+
+  companion object {
+    fun fromServer(value: String): TicketPriority {
+      return entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: MEDIUM
+    }
+  }
 }
 
 enum class TicketFilter {
@@ -23,22 +37,40 @@ enum class TicketFilter {
   CLOSED
 }
 
+enum class TicketRole {
+  ADMIN,
+  PARTICIPANT;
+
+  companion object {
+    fun fromServer(value: String): TicketRole {
+      return entries.firstOrNull { it.name.equals(value, ignoreCase = true) } ?: PARTICIPANT
+    }
+  }
+}
+
 data class TicketParticipant(
-  val id: String,
-  val displayName: String
-)
+  val aci: UUID,
+  val displayName: String,
+  val role: TicketRole = TicketRole.PARTICIPANT
+) {
+  val id: String get() = aci.toString()
+}
 
 data class TicketMessage(
   val id: String,
-  val authorId: String,
+  val authorAci: UUID,
   val authorName: String,
   val body: String,
   val timestampMs: Long,
-  val isFromSelf: Boolean
-)
+  val isFromSelf: Boolean,
+  val attachments: List<TicketAttachment> = emptyList()
+) {
+  val authorId: String get() = authorAci.toString()
+  val hasAttachments: Boolean get() = attachments.isNotEmpty()
+}
 
 data class Ticket(
-  val id: String,
+  val id: UUID,
   val number: String,
   val description: String,
   val department: String,
@@ -47,13 +79,16 @@ data class Ticket(
   val status: TicketStatus,
   val createdAtMs: Long,
   val lastActivityMs: Long,
-  val createdById: String,
+  val createdByAci: UUID,
   val createdByName: String,
-  val administratorId: String,
+  val administratorAci: UUID,
+  val discussionId: UUID,
   val participants: List<TicketParticipant>,
   val messages: List<TicketMessage>
 ) {
-  fun isAdministrator(userId: String): Boolean = administratorId == userId
+  val idString: String get() = id.toString()
 
-  fun isParticipant(userId: String): Boolean = participants.any { it.id == userId }
+  fun isAdministrator(aci: UUID): Boolean = administratorAci == aci
+
+  fun isParticipant(aci: UUID): Boolean = participants.any { it.aci == aci }
 }

@@ -127,6 +127,8 @@ class RegistrationRepository(val context: Context, val networkController: Networ
 
   fun getCaptchaUrl(): String = networkController.getCaptchaUrl()
 
+  fun getNoopCaptchaTokenOrNull(): String? = networkController.noopCaptchaTokenOrNull()
+
   suspend fun submitCaptchaToken(
     sessionId: String,
     captchaToken: String
@@ -703,6 +705,14 @@ class RegistrationRepository(val context: Context, val networkController: Networ
       this.registrationLockEnabled = false
     }
     storageController.commitRegistrationData()
+  }
+
+  /**
+   * Records PIN opt-out and a terminal restore decision so registration can complete without SVR.
+   */
+  suspend fun recordPinOptOut(restoreDecision: RestoreDecision = RestoreDecision.NEW_ACCOUNT): Unit = withContext(Dispatchers.IO) {
+    setPinOptedOut()
+    setRestoreDecision(restoreDecision)
   }
 
   /**

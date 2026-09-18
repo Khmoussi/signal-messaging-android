@@ -73,6 +73,8 @@ import org.whispersystems.signalservice.api.SignalServiceMessageReceiver
 import org.whispersystems.signalservice.api.SignalServiceMessageSender
 import org.whispersystems.signalservice.api.account.AccountApi
 import org.whispersystems.signalservice.api.donations.DonationsApi
+import org.whispersystems.signalservice.api.tickets.TicketApi
+import org.whispersystems.signalservice.api.directory.LocalDirectoryApi
 import org.whispersystems.signalservice.api.groupsv2.GroupsV2Operations
 import org.whispersystems.signalservice.api.keys.KeysApi
 import org.whispersystems.signalservice.api.message.MessageApi
@@ -416,6 +418,12 @@ object AppDependencies {
   val donationsApi: DonationsApi
     get() = networkModule.donationsApi
 
+  val ticketApi: TicketApi
+    get() = networkModule.ticketApi
+
+  val localDirectoryApi: LocalDirectoryApi
+    get() = networkModule.localDirectoryApi
+
   @JvmStatic
   val donationPermitsRepository: DonationPermitsRepository by lazy {
     provider.provideDonationPermitsRepository(signalServiceNetworkAccess.getConfiguration().zkGroupServerPublicParams)
@@ -523,6 +531,8 @@ object AppDependencies {
     fun provideProfileApi(authWebSocket: SignalWebSocket.AuthenticatedWebSocket, unauthWebSocket: SignalWebSocket.UnauthenticatedWebSocket, pushServiceSocket: PushServiceSocket, clientZkProfileOperations: ClientZkProfileOperations): ProfileApi
     fun provideRemoteConfigApi(authWebSocket: SignalWebSocket.AuthenticatedWebSocket, pushServiceSocket: PushServiceSocket): RemoteConfigApi
     fun provideDonationsApi(authWebSocket: SignalWebSocket.AuthenticatedWebSocket, unauthWebSocket: SignalWebSocket.UnauthenticatedWebSocket): DonationsApi
+    fun provideTicketApi(authWebSocket: SignalWebSocket.AuthenticatedWebSocket): TicketApi
+    fun provideLocalDirectoryApi(authWebSocket: SignalWebSocket.AuthenticatedWebSocket): LocalDirectoryApi
     fun provideSvrBApi(libSignalNetwork: Network): SvrBApi
     fun provideKeyTransparencyApi(unauthWebSocket: SignalWebSocket.UnauthenticatedWebSocket): KeyTransparencyApi
     fun provideBlobs(): BlobProvider

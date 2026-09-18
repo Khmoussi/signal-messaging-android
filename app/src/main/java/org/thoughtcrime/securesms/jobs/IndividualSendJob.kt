@@ -6,6 +6,7 @@ import okio.utf8Size
 import org.signal.core.util.UuidUtil.parseOrThrow
 import org.signal.core.util.logging.Log
 import org.signal.libsignal.protocol.NoSessionException
+import org.thoughtcrime.securesms.BuildConfig
 import org.thoughtcrime.securesms.crypto.SealedSenderAccessUtil
 import org.thoughtcrime.securesms.database.NoSuchMessageException
 import org.thoughtcrime.securesms.database.RecipientTable.SealedSenderAccessMode
@@ -69,7 +70,7 @@ class IndividualSendJob private constructor(parameters: Parameters, private val 
         throw AssertionError("This job does not send group messages!")
       }
 
-      return if (RemoteConfig.useIndividualSendJobV2) {
+      return if (!BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER && RemoteConfig.useIndividualSendJobV2) {
         IndividualSendJobV2.create(messageId, recipient, hasMedia, isScheduledSend)
       } else {
         IndividualSendJob(messageId, recipient, hasMedia, isScheduledSend)
@@ -79,7 +80,7 @@ class IndividualSendJob private constructor(parameters: Parameters, private val 
     @JvmStatic
     @WorkerThread
     fun enqueue(context: Context, jobManager: JobManager, messageId: Long, recipient: Recipient, isScheduledSend: Boolean) {
-      if (RemoteConfig.useIndividualSendJobV2) {
+      if (!BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER && RemoteConfig.useIndividualSendJobV2) {
         IndividualSendJobV2.enqueue(context, messageId, recipient, isScheduledSend)
         return
       }

@@ -356,8 +356,11 @@ class VerificationCodeViewModel(
 
         when {
           response.reregistration -> parentEventEmitter.navigateTo(RegistrationRoute.ArchiveRestoreSelection.forPostRegisterWithPinUnknown())
-          response.storageCapable -> parentEventEmitter.navigateTo(RegistrationRoute.PinEntryForSvrRestore)
-          else -> parentEventEmitter.navigateTo(RegistrationRoute.PinCreate)
+          else -> {
+            Log.i(TAG, "[Register] Skipping PIN setup for MVP; recording opt-out and completing registration.")
+            repository.recordPinOptOut()
+            parentEventEmitter(RegistrationFlowEvent.RegistrationComplete)
+          }
         }
         state
       }

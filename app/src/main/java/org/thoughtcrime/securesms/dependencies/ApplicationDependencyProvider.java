@@ -124,6 +124,8 @@ import org.whispersystems.signalservice.api.SignalServiceMessageSender;
 import org.whispersystems.signalservice.api.account.AccountApi;
 import org.whispersystems.signalservice.api.crypto.SignalServiceCipher;
 import org.whispersystems.signalservice.api.donations.DonationsApi;
+import org.whispersystems.signalservice.api.tickets.TicketApi;
+import org.whispersystems.signalservice.api.directory.LocalDirectoryApi;
 import org.whispersystems.signalservice.api.groupsv2.ClientZkOperations;
 import org.whispersystems.signalservice.api.groupsv2.GroupsV2Operations;
 import org.whispersystems.signalservice.api.keys.KeysApi;
@@ -143,6 +145,7 @@ import org.whispersystems.signalservice.internal.configuration.SignalServiceConf
 import org.whispersystems.signalservice.internal.push.PushServiceSocket;
 import org.whispersystems.signalservice.internal.websocket.LibSignalChatConnection;
 import org.whispersystems.signalservice.internal.websocket.LibSignalNetworkExtensions;
+import org.whispersystems.signalservice.internal.websocket.OkHttpWebSocketConnection;
 
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -388,7 +391,10 @@ public class ApplicationDependencyProvider implements AppDependencies.Provider {
 
   @Override
   public @NonNull SignalWebSocket.AuthenticatedWebSocket provideAuthWebSocket(@NonNull Supplier<SignalServiceConfiguration> signalServiceConfigurationSupplier, @NonNull Supplier<Network> libSignalNetworkSupplier) {
-    SleepTimer                   sleepTimer    = !SignalStore.account().isFcmEnabled() || SignalStore.settings().getForceWebsocketMode().isEnabled() ? new AlarmSleepTimer(context) : new UptimeSleepTimer();
+    SleepTimer                   sleepTimer    = !SignalStore.account().isFcmEnabled()
+                                                 || SignalStore.settings().getForceWebsocketMode().isEnabled()
+                                                 || BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER
+                                                 ? new AlarmSleepTimer(context) : new UptimeSleepTimer();
     SignalWebSocketHealthMonitor healthMonitor = new SignalWebSocketHealthMonitor(sleepTimer, true);
 
     WebSocketFactory authFactory = () -> {
@@ -396,6 +402,17 @@ public class ApplicationDependencyProvider implements AppDependencies.Provider {
 
       if (credentialsProvider.isInvalid()) {
         throw new WebSocketUnavailableException("Invalid auth credentials");
+      }
+
+      // libsignal hardcodes chat.signal.org / grpc.chat.signal.org; self-hosted builds must use OkHttp
+      // so the socket follows BuildConfig.SIGNAL_URL (e.g. chat.xrp.ing).
+      if (BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
+        return new OkHttpWebSocketConnection("okhttp-auth",
+                                             signalServiceConfigurationSupplier.get(),
+                                             Optional.of(credentialsProvider),
+                                             StandardUserAgentInterceptor.USER_AGENT,
+                                             healthMonitor,
+                                             Stories.isFeatureEnabled());
       }
 
       Network network = libSignalNetworkSupplier.get();
@@ -421,10 +438,22 @@ public class ApplicationDependencyProvider implements AppDependencies.Provider {
 
   @Override
   public @NonNull SignalWebSocket.UnauthenticatedWebSocket provideUnauthWebSocket(@NonNull Supplier<SignalServiceConfiguration> signalServiceConfigurationSupplier, @NonNull Supplier<Network> libSignalNetworkSupplier) {
-    SleepTimer                   sleepTimer    = !SignalStore.account().isFcmEnabled() || SignalStore.settings().getForceWebsocketMode().isEnabled() ? new AlarmSleepTimer(context) : new UptimeSleepTimer();
+    SleepTimer                   sleepTimer    = !SignalStore.account().isFcmEnabled()
+                                                 || SignalStore.settings().getForceWebsocketMode().isEnabled()
+                                                 || BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER
+                                                 ? new AlarmSleepTimer(context) : new UptimeSleepTimer();
     SignalWebSocketHealthMonitor healthMonitor = new SignalWebSocketHealthMonitor(sleepTimer, false);
 
     WebSocketFactory unauthFactory = () -> {
+      if (BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
+        return new OkHttpWebSocketConnection("okhttp-unauth",
+                                             signalServiceConfigurationSupplier.get(),
+                                             Optional.empty(),
+                                             StandardUserAgentInterceptor.USER_AGENT,
+                                             healthMonitor,
+                                             Stories.isFeatureEnabled());
+      }
+
       Network network = libSignalNetworkSupplier.get();
       return new LibSignalChatConnection("libsignal-unauth",
                                          network,
@@ -638,6 +667,16 @@ public class ApplicationDependencyProvider implements AppDependencies.Provider {
   @Override
   public @NonNull DonationsApi provideDonationsApi(@NonNull SignalWebSocket.AuthenticatedWebSocket authWebSocket, @NonNull SignalWebSocket.UnauthenticatedWebSocket unauthWebSocket) {
     return new DonationsApi(authWebSocket, unauthWebSocket);
+  }
+
+  @Override
+  public @NonNull TicketApi provideTicketApi(@NonNull SignalWebSocket.AuthenticatedWebSocket authWebSocket) {
+    return new TicketApi(authWebSocket);
+  }
+
+  @Override
+  public @NonNull LocalDirectoryApi provideLocalDirectoryApi(@NonNull SignalWebSocket.AuthenticatedWebSocket authWebSocket) {
+    return new LocalDirectoryApi(authWebSocket);
   }
 
   @Override

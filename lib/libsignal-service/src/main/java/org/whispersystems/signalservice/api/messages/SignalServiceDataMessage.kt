@@ -54,7 +54,8 @@ class SignalServiceDataMessage private constructor(
   val pollTerminate: Optional<PollTerminate>,
   val pinnedMessage: Optional<PinnedMessage>,
   val unpinnedMessage: Optional<UnpinnedMessage>,
-  val adminDelete: Optional<AdminDelete>
+  val adminDelete: Optional<AdminDelete>,
+  val ticketId: Optional<String>
 ) {
   val isActivatePaymentsRequest: Boolean = payment.map { it.isActivationRequest }.orElse(false)
   val isPaymentsActivated: Boolean = payment.map { it.isActivation }.orElse(false)
@@ -111,6 +112,7 @@ class SignalServiceDataMessage private constructor(
     private var pinnedMessage: PinnedMessage? = null
     private var unpinnedMessage: UnpinnedMessage? = null
     private var adminDelete: AdminDelete? = null
+    private var ticketId: String? = null
 
     fun withTimestamp(timestamp: Long): Builder {
       this.timestamp = timestamp
@@ -258,6 +260,11 @@ class SignalServiceDataMessage private constructor(
       return this
     }
 
+    fun withTicketId(ticketId: String?): Builder {
+      this.ticketId = ticketId
+      return this
+    }
+
     fun build(): SignalServiceDataMessage {
       if (timestamp == 0L) {
         timestamp = System.currentTimeMillis()
@@ -291,7 +298,8 @@ class SignalServiceDataMessage private constructor(
         pollTerminate = pollTerminate.asOptional(),
         pinnedMessage = pinnedMessage.asOptional(),
         unpinnedMessage = unpinnedMessage.asOptional(),
-        adminDelete = adminDelete.asOptional()
+        adminDelete = adminDelete.asOptional(),
+        ticketId = ticketId.emptyIfStringEmpty()
       )
     }
   }

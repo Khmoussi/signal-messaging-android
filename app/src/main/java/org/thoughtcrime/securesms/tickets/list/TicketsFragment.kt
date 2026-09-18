@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -30,6 +32,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.stringResource
@@ -57,8 +60,10 @@ import org.thoughtcrime.securesms.tickets.model.TicketStatus
 import java.text.DateFormat
 import java.util.Date
 
+private val KadiGold = Color(0xFFC9A227)
+
 /**
- * Tickets tab list. Uses in-memory mock data only.
+ * Tickets tab list backed by [org.thoughtcrime.securesms.tickets.data.TicketsRepository].
  */
 class TicketsFragment : Fragment() {
 
@@ -83,6 +88,11 @@ class TicketsFragment : Fragment() {
     }
   }
 
+  override fun onResume() {
+    super.onResume()
+    viewModel.refresh()
+  }
+
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     disposables.bindTo(viewLifecycleOwner)
 
@@ -104,7 +114,7 @@ class TicketsFragment : Fragment() {
   }
 
   private fun openTicket(ticket: Ticket) {
-    startActivity(TicketDiscussionActivity.createIntent(requireContext(), ticket.id))
+    startActivity(TicketDiscussionActivity.createIntent(requireContext(), ticket.idString))
   }
 }
 
@@ -148,7 +158,7 @@ private fun TicketsScreen(
           contentPadding = PaddingValues(bottom = 96.dp),
           modifier = Modifier.fillMaxSize()
         ) {
-          items(uiState.tickets, key = { it.id }) { ticket ->
+          items(uiState.tickets, key = { it.idString }) { ticket ->
             TicketRow(
               ticket = ticket,
               onClick = { onTicketClick(ticket) }
@@ -212,15 +222,7 @@ private fun TicketRow(
         text = ticket.number,
         style = MaterialTheme.typography.titleSmall
       )
-      Text(
-        text = statusLabel(ticket.status),
-        style = MaterialTheme.typography.labelMedium,
-        color = if (ticket.status == TicketStatus.OPEN) {
-          MaterialTheme.colorScheme.primary
-        } else {
-          MaterialTheme.colorScheme.onSurfaceVariant
-        }
-      )
+      StatusBadge(status = ticket.status)
     }
 
     Spacer(modifier = Modifier.height(4.dp))
@@ -255,6 +257,23 @@ private fun TicketRow(
 }
 
 @Composable
+private fun StatusBadge(status: TicketStatus) {
+  val background = if (status == TicketStatus.OPEN) {
+    MaterialTheme.colorScheme.primary
+  } else {
+    KadiGold
+  }
+  Text(
+    text = statusLabel(status),
+    style = MaterialTheme.typography.labelMedium,
+    color = Color.White,
+    modifier = Modifier
+      .background(background, RoundedCornerShape(50))
+      .padding(horizontal = 10.dp, vertical = 4.dp)
+  )
+}
+
+@Composable
 private fun statusLabel(status: TicketStatus): String {
   return when (status) {
     TicketStatus.OPEN -> stringResource(R.string.Tickets__status_open)
@@ -270,7 +289,7 @@ private fun TicketsScreenPreview() {
       uiState = TicketsUiState(
         tickets = listOf(
           Ticket(
-            id = "1",
+            id = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001"),
             number = "TKT-1001",
             description = "Sample ticket description",
             department = "IT",
@@ -279,9 +298,10 @@ private fun TicketsScreenPreview() {
             status = TicketStatus.OPEN,
             createdAtMs = System.currentTimeMillis(),
             lastActivityMs = System.currentTimeMillis(),
-            createdById = "me",
+            createdByAci = java.util.UUID.fromString("00000000-0000-0000-0000-000000000002"),
             createdByName = "You",
-            administratorId = "me",
+            administratorAci = java.util.UUID.fromString("00000000-0000-0000-0000-000000000002"),
+            discussionId = java.util.UUID.fromString("00000000-0000-0000-0000-000000000003"),
             participants = emptyList(),
             messages = emptyList()
           )

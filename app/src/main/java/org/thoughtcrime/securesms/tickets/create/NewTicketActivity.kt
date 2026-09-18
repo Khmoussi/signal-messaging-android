@@ -8,6 +8,8 @@ package org.thoughtcrime.securesms.tickets.create
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
@@ -40,26 +42,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import org.signal.core.ui.compose.Buttons
 import org.signal.core.ui.compose.DayNightPreviews
 import org.signal.core.ui.compose.Previews
 import org.signal.core.ui.compose.theme.SignalTheme
+import org.signal.core.util.logging.Log
 import org.thoughtcrime.securesms.PassphraseRequiredActivity
 import org.thoughtcrime.securesms.R
-import org.thoughtcrime.securesms.tickets.data.FakeTicketsRepository
+import org.thoughtcrime.securesms.tickets.contacts.TicketParticipantPickerActivity
+import org.thoughtcrime.securesms.tickets.data.TicketsRepository
 import org.thoughtcrime.securesms.tickets.discussion.TicketDiscussionActivity
 import org.thoughtcrime.securesms.tickets.model.TicketParticipant
 import org.thoughtcrime.securesms.tickets.model.TicketPriority
+import java.util.UUID
 import org.signal.core.ui.R as CoreUiR
 
 class NewTicketActivity : PassphraseRequiredActivity() {
   companion object {
+    private val TAG = Log.tag(NewTicketActivity::class.java)
+
     fun createIntent(context: Context): Intent {
       return Intent(context, NewTicketActivity::class.java)
     }
@@ -71,18 +81,33 @@ class NewTicketActivity : PassphraseRequiredActivity() {
 
     setContent {
       SignalTheme {
+        val scope = rememberCoroutineScope()
+        val context = LocalContext.current
+        var submitting by remember { mutableStateOf(false) }
+
         NewTicketScreen(
+          submitting = submitting,
           onCancel = { finish() },
-          onSubmit = { department, location, priority, description, participantIds ->
-            val ticket = FakeTicketsRepository.createTicket(
-              department = department,
-              location = location,
-              priority = priority,
-              description = description,
-              initialParticipantIds = participantIds
-            )
-            startActivity(TicketDiscussionActivity.createIntent(this, ticket.id))
-            finish()
+          onSubmit = { department, location, priority, description, participantAcis ->
+            if (submitting) return@NewTicketScreen
+            submitting = true
+            scope.launch {
+              try {
+                val ticket = TicketsRepository.createTicket(
+                  department = department,
+                  location = location,
+                  priority = priority,
+                  description = description,
+                  participantAcis = participantAcis
+                )
+                startActivity(TicketDiscussionActivity.createIntent(this@NewTicketActivity, ticket.idString))
+                finish()
+              } catch (e: Exception) {
+                Log.w(TAG, "Failed to create ticket", e)
+                Toast.makeText(context, e.message ?: getString(R.string.Tickets__error_generic), Toast.LENGTH_LONG).show()
+                submitting = false
+              }
+            }
           }
         )
       }
@@ -93,18 +118,29 @@ class NewTicketActivity : PassphraseRequiredActivity() {
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun NewTicketScreen(
+  submitting: Boolean = false,
   onCancel: () -> Unit,
-  onSubmit: (department: String, location: String, priority: TicketPriority, description: String, participantIds: List<String>) -> Unit,
-  departments: List<String> = FakeTicketsRepository.DEPARTMENTS,
-  locations: List<String> = FakeTicketsRepository.LOCATIONS,
-  availableParticipants: List<TicketParticipant> = FakeTicketsRepository.AVAILABLE_PARTICIPANTS
+  onSubmit: (department: String, location: String, priority: TicketPriority, description: String, participantAcis: List<UUID>) -> Unit,
+  departments: List<String> = TicketsRepository.DEPARTMENTS,
+  locations: List<String> = TicketsRepository.LOCATIONS
 ) {
   var department by remember { mutableStateOf(departments.first()) }
   var location by remember { mutableStateOf(locations.first()) }
   var priority by remember { mutableStateOf(TicketPriority.MEDIUM) }
   var description by remember { mutableStateOf("") }
-  var selectedParticipantIds by remember { mutableStateOf(setOf<String>()) }
+  var selectedParticipants by remember { mutableStateOf(listOf<TicketParticipant>()) }
   var showValidationError by remember { mutableStateOf(false) }
+  val priorityLabels = TicketPriority.entries.associateWith { priorityLabel(it) }
+  val priorityByLabel = priorityLabels.entries.associate { (key, value) -> value to key }
+
+  val contactPicker = rememberLauncherForActivityResult(
+    TicketParticipantPickerActivity.Contract(excludeAcis = emptyList(), singleSelection = false)
+  ) { acis ->
+    val added = acis.map { aci ->
+      TicketParticipant(aci = aci, displayName = TicketsRepository.resolveName(aci))
+    }
+    selectedParticipants = (selectedParticipants + added).distinctBy { it.aci }
+  }
 
   Scaffold(
     topBar = {
@@ -150,10 +186,10 @@ fun NewTicketScreen(
 
       DropdownField(
         label = stringResource(R.string.NewTicketActivity__priority),
-        value = priorityLabel(priority),
-        options = TicketPriority.entries.map { priorityLabel(it) },
+        value = priorityLabels.getValue(priority),
+        options = TicketPriority.entries.map { priorityLabels.getValue(it) },
         onSelected = { label ->
-          priority = TicketPriority.entries.first { priorityLabel(it) == label }
+          priority = priorityByLabel[label] ?: TicketPriority.MEDIUM
         }
       )
 
@@ -183,20 +219,20 @@ fun NewTicketScreen(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
       ) {
-        availableParticipants.forEach { participant ->
-          val selected = participant.id in selectedParticipantIds
+        selectedParticipants.forEach { participant ->
           FilterChip(
-            selected = selected,
+            selected = true,
             onClick = {
-              selectedParticipantIds = if (selected) {
-                selectedParticipantIds - participant.id
-              } else {
-                selectedParticipantIds + participant.id
-              }
+              selectedParticipants = selectedParticipants.filterNot { it.aci == participant.aci }
             },
             label = { Text(participant.displayName) }
           )
         }
+        FilterChip(
+          selected = false,
+          onClick = { contactPicker.launch(Unit) },
+          label = { Text(stringResource(R.string.TicketDiscussion__add_participant)) }
+        )
       }
 
       Text(
@@ -211,14 +247,21 @@ fun NewTicketScreen(
 
       Spacer(modifier = Modifier.height(8.dp))
 
-      Buttons.LargeTonal(
+      Buttons.LargePrimary(
         onClick = {
           if (description.isBlank()) {
             showValidationError = true
           } else {
-            onSubmit(department, location, priority, description, selectedParticipantIds.toList())
+            onSubmit(
+              department,
+              location,
+              priority,
+              description,
+              selectedParticipants.map { it.aci }
+            )
           }
         },
+        enabled = !submitting,
         modifier = Modifier.fillMaxWidth()
       ) {
         Text(stringResource(R.string.NewTicketActivity__submit))

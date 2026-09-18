@@ -55,6 +55,7 @@ import org.thoughtcrime.securesms.registration.data.network.RegistrationSessionC
 import org.thoughtcrime.securesms.registration.data.network.RegistrationSessionCreationResult
 import org.thoughtcrime.securesms.registration.data.network.RegistrationSessionResult
 import org.thoughtcrime.securesms.registration.data.network.VerificationCodeRequestResult
+import org.thoughtcrime.securesms.registration.fragments.RegistrationConstants
 import org.thoughtcrime.securesms.registration.fragments.RegistrationViewDelegate.setDebugLogSubmitMultiTapView
 import org.thoughtcrime.securesms.registration.ui.RegistrationCheckpoint
 import org.thoughtcrime.securesms.registration.ui.RegistrationState
@@ -488,6 +489,11 @@ class EnterPhoneNumberFragment : LoggingFragment(R.layout.fragment_registration_
   }
 
   private fun moveToCaptcha() {
+    if (org.thoughtcrime.securesms.BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
+      sharedViewModel.setCaptchaResponse(RegistrationConstants.NOOP_CAPTCHA_TOKEN)
+      sharedViewModel.submitCaptchaToken(requireContext())
+      return
+    }
     findNavController().safeNavigate(EnterPhoneNumberFragmentDirections.actionRequestCaptcha())
     ThreadUtil.postToMain { sharedViewModel.setInProgress(false) }
   }

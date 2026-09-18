@@ -117,13 +117,9 @@ class ArchiveRestoreSelectionViewModel(
           RegisteredState.RegisteredAndPinUnknown -> {
             notifyOldDevice(state.restoreMethodToken, NetworkController.RestoreMethod.DECLINE)
             repository.setRestoreDecision(RestoreDecision.SKIPPED)
-            if (state.storageCapable) {
-              Log.i(TAG, "[ConfirmSkip] Account is storage capable. Navigating to PIN entry to restore the existing PIN.")
-              parentEventEmitter.navigateTo(RegistrationRoute.PinEntryForSvrRestore)
-            } else {
-              Log.i(TAG, "[ConfirmSkip] Account is not storage capable. Navigating to PIN creation.")
-              parentEventEmitter.navigateTo(RegistrationRoute.PinCreate)
-            }
+            Log.i(TAG, "[ConfirmSkip] Skipping PIN setup for MVP; recording opt-out and completing registration.")
+            repository.setPinOptedOut()
+            parentEventEmitter(RegistrationFlowEvent.RegistrationComplete)
             state.copy(showSkipWarningDialog = false)
           }
           RegisteredState.RegisteredAndPinKnown -> {

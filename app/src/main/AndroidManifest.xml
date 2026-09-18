@@ -20,7 +20,7 @@
     <!-- Permissions                             -->
     <!-- ======================================= -->
     <permission android:name="${applicationId}.ACCESS_SECRETS" android:label="Access to TextSecure Secrets" android:protectionLevel="signature" />
-    <uses-permission android:name="org.thoughtcrime.securesms.ACCESS_SECRETS" />
+    <uses-permission android:name="${applicationId}.ACCESS_SECRETS" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -81,9 +81,11 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:largeHeap="true"
+        android:networkSecurityConfig="@xml/network_security_config"
         android:resizeableActivity="true"
         android:supportsRtl="true"
-        android:theme="@style/TextSecure.LightTheme">
+        android:theme="@style/TextSecure.LightTheme"
+        android:usesCleartextTraffic="${usesCleartextTraffic}">
 
         <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
@@ -114,7 +116,7 @@
             android:value="true" />
         <meta-data
             android:name="android.telephony.PROPERTY_SATELLITE_DATA_OPTIMIZED"
-            android:value="org.thoughtcrime.securesms" />
+            android:value="${applicationId}" />
 
         <!-- ======================================= -->
         <!-- Activities                              -->
@@ -458,6 +460,12 @@
             android:windowSoftInputMode="adjustResize" />
 
         <activity
+            android:name=".tickets.contacts.TicketParticipantPickerActivity"
+            android:exported="false"
+            android:theme="@style/Signal.DayNight.NoActionBar"
+            android:windowSoftInputMode="stateHidden" />
+
+        <activity
             android:name=".PushContactSelectionActivity"
             android:configChanges="touchscreen|keyboard|keyboardHidden|orientation|screenLayout|screenSize"
             android:exported="false"
@@ -727,7 +735,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.contact" />
+                <data android:mimeType="vnd.android.cursor.item/vnd.com.kadi.app.contact" />
             </intent-filter>
         </activity>
 
@@ -743,13 +751,13 @@
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.call" />
+                <data android:mimeType="vnd.android.cursor.item/vnd.com.kadi.app.call" />
             </intent-filter>
 
             <intent-filter tools:ignore="AppLinkUrlError">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="vnd.android.cursor.item/vnd.org.thoughtcrime.securesms.videocall" />
+                <data android:mimeType="vnd.android.cursor.item/vnd.com.kadi.app.videocall" />
             </intent-filter>
 
         </activity>
@@ -856,6 +864,12 @@
             android:exported="false"
             android:label="@string/PlacePickerActivity_title"
             android:theme="@style/Theme.Signal.DayNight.NoActionBar" />
+
+        <activity
+            android:name=".KadiSplashActivity"
+            android:configChanges="touchscreen|keyboard|keyboardHidden"
+            android:exported="false"
+            android:theme="@style/Theme.Signal.Starting" />
 
         <activity
             android:name=".MainActivity"
@@ -978,7 +992,7 @@
             android:name=".RoutingActivity"
             android:exported="true"
             android:resizeableActivity="true"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -1004,7 +1018,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alt_yellow"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -1030,7 +1044,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alt_bubbles"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -1056,7 +1070,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alt_chat"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -1083,7 +1097,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alt_news"
             android:label="@string/app_icon_label_news"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -1110,7 +1124,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alt_notes"
             android:label="@string/app_icon_label_notes"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -1136,7 +1150,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alt_signal_color"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -1162,7 +1176,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alt_signal_dark"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -1188,7 +1202,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alt_signal_dark_variant"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -1214,7 +1228,7 @@
             android:enabled="false"
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alt_signal_white"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -1241,7 +1255,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alt_waves"
             android:label="@string/app_icon_label_waves"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -1268,7 +1282,7 @@
             android:exported="true"
             android:icon="@mipmap/ic_launcher_alt_weather"
             android:label="@string/app_icon_label_weather"
-            android:targetActivity=".MainActivity">
+            android:targetActivity=".KadiSplashActivity">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

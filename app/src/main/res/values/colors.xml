@@ -63,5 +63,13 @@
     <color name="safety_number_card_grey">#ffEBEAE8</color>
     <color name="safety_number_card_blue">#ff506ECD</color>
 
-    <color name="notification_background_ultramarine">#3B45FD</color>
+    <color name="notification_background_ultramarine">#1B6B45</color>
+
+    <color name="kadi_brand_teal">#02635A</color>
+    <color name="kadi_brand_green">#0D9458</color>
+    <color name="kadi_brand_gold">#C2A42A</color>
+    <color name="kadi_brand_navy">#212A35</color>
+    <color name="kadi_splash_background">@color/kadi_brand_teal</color>
+    <color name="kadi_splash_background_light">@color/kadi_brand_teal</color>
+    <color name="kadi_splash_background_dark">@color/kadi_brand_navy</color>
 </resources>

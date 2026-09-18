@@ -7,7 +7,9 @@
 
 <!-- smartling.instruction_comments_enabled = on -->
 <resources>
-    <string name="app_name" translatable="false">Signal</string>
+    <string name="app_name" translatable="false">Kadi</string>
+    <string name="kadi_splash_wordmark" translatable="false">كادي</string>
+    <string name="kadi_splash_tagline" translatable="false">من بلادي عطرها الورد والكادي</string>
 
     <string name="install_url" translatable="false">https://signal.org/install</string>
     <string name="donate_url" translatable="false">https://signal.org/donate</string>
@@ -2536,8 +2538,8 @@
     <string name="MoveableLocalVideoRenderer__expand_local_video">Expand local video</string>
 
     <!-- WebRtcCallView -->
-    <string name="WebRtcCallView__signal_call">Signal Call</string>
-    <string name="WebRtcCallView__signal_video_call">Signal Video Call</string>
+    <string name="WebRtcCallView__signal_call">Kadi Call</string>
+    <string name="WebRtcCallView__signal_video_call">Kadi Video Call</string>
     <string name="WebRtcCallView__start_call">Start Call</string>
     <string name="WebRtcCallView__join_call">Join Call</string>
     <string name="WebRtcCallView__call_is_full">Call is full</string>
@@ -2547,7 +2549,7 @@
     <string name="WebRtcCallView__joining">Joining…</string>
     <string name="WebRtcCallView__disconnected">Disconnected</string>
     <!-- Utilized in the lobby before joining a call link -->
-    <string name="WebRtcCallView__signal_call_link">Signal call link</string>
+    <string name="WebRtcCallView__signal_call_link">Kadi call link</string>
     <!-- Warning displayed when entering a call via a link and you have Phone Number Privacy disabled-->
     <string name="WebRtcCallView__anyone_who_joins_pnp_disabled">Anyone who joins this call via the link will see your name, photo, and phone number.</string>
     <!-- Warning displayed when entering a call via a link and you have Phone Number Privacy enabled-->
@@ -2813,12 +2815,12 @@
     <string name="RegistrationActivity_you_will_receive_a_call_to_verify_this_number">You\'ll receive a call to verify this number.</string>
     <string name="RegistrationActivity_edit_number">Edit number</string>
     <string name="RegistrationActivity_missing_google_play_services">Missing Google Play Services</string>
-    <string name="RegistrationActivity_this_device_is_missing_google_play_services">This device is missing Google Play Services. You can still use Signal, but this configuration may result in reduced reliability or performance.\n\nIf you are not an advanced user, are not running an aftermarket Android ROM, or believe that you are seeing this in error, please contact support@signal.org for help troubleshooting.</string>
+    <string name="RegistrationActivity_this_device_is_missing_google_play_services">This device is missing Google Play Services. You can still use Kadi, but this configuration may result in reduced reliability or performance.\n\nIf you are not an advanced user, are not running an aftermarket Android ROM, or believe that you are seeing this in error, please contact support for help troubleshooting.</string>
     <string name="RegistrationActivity_i_understand">I understand</string>
     <string name="RegistrationActivity_play_services_error">Play Services Error</string>
     <string name="RegistrationActivity_google_play_services_is_updating_or_unavailable">Google Play Services is updating or temporarily unavailable. Please try again.</string>
-    <string name="RegistrationActivity_signal_needs_access_to_your_contacts_and_media_in_order_to_connect_with_friends">Signal needs the contacts and media permissions to help you connect with friends and send messages. Your contacts are uploaded using Signal\'s private contact discovery, which means they are end-to-end encrypted and never visible to the Signal service.</string>
-    <string name="RegistrationActivity_signal_needs_access_to_your_contacts_in_order_to_connect_with_friends">Signal needs the contacts permission to help you connect with friends. Your contacts are uploaded using Signal\'s private contact discovery, which means they are end-to-end encrypted and never visible to the Signal service.</string>
+    <string name="RegistrationActivity_signal_needs_access_to_your_contacts_and_media_in_order_to_connect_with_friends">Kadi needs the contacts and media permissions to help you connect with friends and send messages. Your contacts are uploaded using private contact discovery, which means they are end-to-end encrypted and never visible to the Kadi service.</string>
+    <string name="RegistrationActivity_signal_needs_access_to_your_contacts_in_order_to_connect_with_friends">Kadi needs the contacts permission to help you connect with friends. Your contacts are uploaded using private contact discovery, which means they are end-to-end encrypted and never visible to the Kadi service.</string>
     <string name="RegistrationActivity_rate_limited_to_service">You\'ve made too many attempts to register this number. Please try again later.</string>
     <!--    During registration, if the user attempts (and fails) to register, we display this error message with a number of minutes timer they are allowed to try again.-->
     <string name="RegistrationActivity_rate_limited_to_try_again">You\'ve made too many attempts to register this number. Please try again in %s.</string>
@@ -2832,7 +2834,7 @@
     <string name="RegistrationActivity_non_standard_number_format">Non-standard number format</string>
     <!-- Dialog message shown to confirm when entering phone number (first placeholder) is normalized and formatted differently by the app (second placeholder). -->
     <string name="RegistrationActivity_the_number_you_entered_appears_to_be_a_non_standard">The number you entered (%1$s) appears to be a non-standard format.\n\nDid you mean %2$s?</string>
-    <string name="RegistrationActivity_signal_android_phone_number_format">Signal Android - Phone Number Format</string>
+    <string name="RegistrationActivity_signal_android_phone_number_format">Kadi Android - Phone Number Format</string>
     <!--    Small "toast" notification to the user confirming that they have requested a new code via voice call.-->
     <string name="RegistrationActivity_call_requested">Call requested</string>
     <!--    Small "toast" notification to the user confirming that they have requested a new code via SMS.-->
@@ -4951,7 +4953,7 @@
     <!-- Title for dialog to enter in the backup passphrase -->
     <string name="RegistrationActivity_enter_backup_passphrase">Enter backup passphrase</string>
     <string name="RegistrationActivity_restore">Restore</string>
-    <string name="RegistrationActivity_backup_failure_downgrade">Cannot import backups from newer versions of Signal</string>
+    <string name="RegistrationActivity_backup_failure_downgrade">Cannot import backups from newer versions of Kadi</string>
     <!-- Error message indicating that we could not restore the user\'s backup. Displayed in a toast at the bottom of the screen. -->
     <string name="RegistrationActivity_backup_failure_foreign_key">Backup contains malformed data</string>
     <string name="RegistrationActivity_incorrect_backup_passphrase">Incorrect backup passphrase</string>
@@ -4996,8 +4998,8 @@
     <string name="RegistrationActivity_call_me_instead_available_in">Call me (%1$02d:%2$02d)</string>
     <!--    Countdown to when the user can request a new SMS code during registration.-->
     <string name="RegistrationActivity_resend_sms_available_in">Resend Code (%1$02d:%2$02d)</string>
-    <string name="RegistrationActivity_contact_signal_support">Contact Signal Support</string>
-    <string name="RegistrationActivity_code_support_subject">Signal Registration - Verification Code for Android</string>
+    <string name="RegistrationActivity_contact_signal_support">Contact Support</string>
+    <string name="RegistrationActivity_code_support_subject">Kadi Registration - Verification Code for Android</string>
     <string name="RegistrationActivity_incorrect_code">Incorrect code</string>
     <string name="BackupUtil_never">Never</string>
     <!-- Subtext below last backup time when we do not know when the last backup was -->
@@ -5005,7 +5007,7 @@
     <!-- Phone number heading displayed as a screen title -->
     <string name="preferences_app_protection__phone_number">Phone number</string>
     <!-- Subtext below option to launch into phone number privacy settings screen -->
-    <string name="preferences_app_protection__choose_who_can_see">Choose who can see your phone number and who can contact you on Signal with it.</string>
+    <string name="preferences_app_protection__choose_who_can_see">Choose who can see your phone number and who can contact you on Kadi with it.</string>
     <!-- Section title above two radio buttons for enabling and disabling phone number display -->
     <string name="PhoneNumberPrivacySettingsFragment_who_can_see_my_number_heading">Who can see my number</string>
     <!-- Subtext below radio buttons when who can see my number is set to everybody -->
@@ -6013,10 +6015,9 @@
     <!--    Header for the screen that displays the licenses of the open-source software dependencies of the Signal app-->
     <string name="HelpSettingsFragment__licenses">Licenses</string>
     <string name="HelpSettingsFragment__terms_amp_privacy_policy">Terms &amp; Privacy Policy</string>
-    <string name="HelpFragment__copyright_signal_messenger">Copyright Signal Messenger</string>
+    <string name="HelpFragment__copyright_signal_messenger">Copyright Kadi</string>
     <string name="HelpFragment__licenced_under_the_agplv3">Licensed under the GNU AGPLv3</string>
-    <!-- Non-English translations should use "Signal is a nonprofit." instead, dropping the 501c3 reference. -->
-    <string name="HelpSettingsFragment__signal_is_a_501c3">Signal is a 501c3 nonprofit</string>
+    <string name="HelpSettingsFragment__signal_is_a_501c3">Secure messaging for teams</string>
 
     <!-- DataAndStorageSettingsFragment -->
     <string name="DataAndStorageSettingsFragment__media_quality">Media quality</string>
@@ -6487,8 +6488,7 @@
     <string name="SubscribeLearnMoreBottomSheetDialogFragment__donate_and_get_badge">Get an optional badge on your profile when you donate</string>
     <!-- Third small text blurb on learn more sheet -->
     <string name="SubscribeLearnMoreBottomSheetDialogFragment__your_privacy_is_our_mission">Your privacy is our mission</string>
-    <!-- Fourth small text blurb on learn more sheet. Non-English translations should use "Signal is a nonprofit." instead, dropping the 501c3 reference. -->
-    <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_501c3">Signal is a 501c3 nonprofit. US donations are tax deductible.</string>
+    <string name="SubscribeLearnMoreBottomSheetDialogFragment__signal_is_a_501c3">Kadi helps your team stay connected securely.</string>
 
     <string name="SubscribeThanksForYourSupportBottomSheetDialogFragment__thanks_for_your_support">Thanks for your Support!</string>
     <!-- Subtext underneath the dialog title on the thanks sheet -->
@@ -6501,7 +6501,7 @@
     <string name="ThanksForYourSupportBottomSheetFragment__when_you_have_more">When you have more than one badge, you can choose one to feature for others to see on your profile.</string>
 
     <string name="BecomeASustainerFragment__get_badges">Get badges for your profile by supporting Signal.</string>
-    <string name="BecomeASustainerFragment__signal_is_a_non_profit">Signal is a nonprofit with no advertisers or investors, supported only by people like you.</string>
+    <string name="BecomeASustainerFragment__signal_is_a_non_profit">Kadi helps your team stay connected with secure messaging and tickets.</string>
 
     <!-- Button label for creating a donation -->
     <string name="ManageDonationsFragment__donate_to_signal">Donate to Signal</string>
@@ -6958,6 +6958,8 @@
     <string name="Tickets__priority_high">High</string>
     <!-- Ticket priority urgent -->
     <string name="Tickets__priority_urgent">Urgent</string>
+    <!-- Generic tickets error -->
+    <string name="Tickets__error_generic">Something went wrong. Please try again.</string>
     <!-- Create ticket screen title -->
     <string name="NewTicketActivity__title">Create Ticket</string>
     <!-- Cancel create ticket -->
@@ -6975,9 +6977,15 @@
     <!-- Optional participants section -->
     <string name="NewTicketActivity__participants_optional">Participants (optional)</string>
     <!-- Attachments placeholder -->
-    <string name="NewTicketActivity__attachments_placeholder">Attachments (coming soon)</string>
+    <string name="NewTicketActivity__attachments_placeholder">Attachments (optional — add in discussion)</string>
     <!-- Submit ticket -->
     <string name="NewTicketActivity__submit">Submit Ticket</string>
+    <!-- Ticket participant picker (network directory) -->
+    <string name="TicketParticipantPicker__done">Done</string>
+    <string name="TicketParticipantPicker__cancel">Cancel</string>
+    <string name="TicketParticipantPicker__filter_optional">Filter (optional)</string>
+    <string name="TicketParticipantPicker__filter_hint">Phone number digits…</string>
+    <string name="TicketParticipantPicker__no_users">No registered users found on this server.</string>
     <!-- Back from ticket discussion -->
     <string name="TicketDiscussion__back">Back</string>
     <!-- Overflow actions -->
@@ -6998,6 +7006,12 @@
     <string name="TicketDiscussion__message_hint">Type a message</string>
     <!-- Send message -->
     <string name="TicketDiscussion__send">Send</string>
+    <string name="TicketDiscussion__attach">Attach file</string>
+    <string name="TicketDiscussion__attachment">Attachment</string>
+    <string name="TicketDiscussion__voice_note">Voice message</string>
+    <string name="TicketDiscussion__slide_to_cancel">Slide left to cancel</string>
+    <string name="TicketDiscussion__release_to_cancel">Release to cancel</string>
+    <string name="TicketDiscussion__download_failed">Could not open attachment</string>
     <!-- Closed ticket read-only banner -->
     <string name="TicketDiscussion__read_only">This ticket is closed and read-only.</string>
     <!-- Created on label; %1$s is date -->
@@ -9267,7 +9281,7 @@
     <!-- Screen headline -->
     <string name="MessagesBackupsTypeSelectionScreen__choose_your_backup_plan">Choose your backup plan</string>
     <!-- Screen subhead -->
-    <string name="MessageBackupsTypeSelectionScreen__all_backups_are_end_to_end_encrypted">All backups are end-to-end encrypted. Signal is a non-profit—paying for backups helps support our mission.</string>
+    <string name="MessageBackupsTypeSelectionScreen__all_backups_are_end_to_end_encrypted">All backups are end-to-end encrypted.</string>
     <!-- Screen subhead highlighted read-more button -->
     <string name="MessageBackupsTypeSelectionScreen__learn_more">Learn more</string>
     <!-- Primary action button label without a current selection -->

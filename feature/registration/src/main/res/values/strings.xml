@@ -3,10 +3,11 @@
     <string name="terms_and_privacy_policy_url" translatable="false">https://signal.org/legal</string>
     <string name="AccountLockedScreen__learn_more_url" translatable="false">https://support.signal.org/hc/articles/360007059792</string>
 
-    <string name="RegistrationActivity_take_privacy_with_you_be_yourself_in_every_message">Take privacy with you.\nBe yourself in every message.</string>
-    <!-- Non-English translations should use "Signal is a nonprofit" instead, dropping the 501c3 reference. -->
-    <string name="RegistrationActivity_terms_and_privacy">Signal is a 501c3 nonprofit\nTerms &amp; Privacy Policy</string>
+    <string name="RegistrationActivity_take_privacy_with_you_be_yourself_in_every_message">Secure messaging for your team.\nStay connected with Kadi.</string>
+    <string name="RegistrationActivity_terms_and_privacy">Terms &amp; Privacy Policy</string>
     <string name="RegistrationActivity_continue">Continue</string>
+
+
     <!-- Screen title for restoring or transfering account -->
     <string name="registration_activity__restore_or_transfer">Restore or transfer</string>
 
@@ -14,7 +15,7 @@
     <!-- Displayed as a title at the top of the screen -->
     <string name="GrantPermissionsFragment__allow_permissions">Allow permissions</string>
     <!-- Displayed as a subtitle at the top of the screen -->
-    <string name="GrantPermissionsFragment__to_help_you_message_people_you_know">To help you message people you know, Signal will request these permissions. </string>
+    <string name="GrantPermissionsFragment__to_help_you_message_people_you_know">To help you message people you know, Kadi will request these permissions. </string>
     <!-- Displayed as a text-only action button at the bottom start of the screen -->
     <string name="GrantPermissionsFragment__not_now">Not now</string>
     <!-- Displayed as an action button at the bottom end of the screen -->
@@ -26,7 +27,7 @@
     <!-- Contacts permission row title -->
     <string name="GrantPermissionsFragment__contacts">Contacts</string>
     <!-- Contacts permission row description -->
-    <string name="GrantPermissionsFragment__find_people_you_know">Find people you know. Your contacts are encrypted and not visible to the Signal service.</string>
+    <string name="GrantPermissionsFragment__find_people_you_know">Find people you know. Your contacts are encrypted and not visible to the Kadi service.</string>
     <!-- Phone calls permission row title -->
     <string name="GrantPermissionsFragment__phone_calls">Phone calls</string>
     <!-- Phone calls permission row description -->
@@ -114,7 +115,7 @@
     <!-- Clickable substring linking to contacting support within VerificationCodeScreen__support_bottom_sheet_body_call_to_action -->
     <string name="VerificationCodeScreen__support_bottom_sheet_cta_contact_support_substring">Contact Support</string>
     <!-- Email subject used when contacting support from the verification code screen -->
-    <string name="VerificationCodeScreen__contact_support_email_subject" translatable="false">Signal Registration - Verification Code for Android</string>
+    <string name="VerificationCodeScreen__contact_support_email_subject" translatable="false">Kadi Registration - Verification Code for Android</string>
     <!-- URL opened for troubleshooting steps from the verification code screen -->
     <string name="VerificationCodeScreen__support_center_url" translatable="false">https://support.signal.org/</string>
 
@@ -239,7 +240,7 @@
     <!-- Button to link an existing Signal account to this device -->
     <string name="WelcomeScreen__link_your_account">Link your account</string>
     <!-- Prompt shown to users who don\'t have a Signal account yet -->
-    <string name="WelcomeScreen__not_on_signal_yet">Not on Signal yet?</string>
+    <string name="WelcomeScreen__not_on_signal_yet">Not on Kadi yet?</string>
     <!-- Button to create a new Signal account -->
     <string name="WelcomeScreen__create_account">Create account</string>
 
@@ -407,7 +408,7 @@
     <!-- Title for the screen asking the user to grant the notification permission -->
     <string name="AllowNotificationsScreen__allow_notifications">Allow Notifications</string>
     <!-- Description for the screen asking the user to grant the notification permission -->
-    <string name="AllowNotificationsScreen__signal_would_like_to_request_the_notification_permission">Signal would like to request the notification permission. This allows your device to display alerts when new messages arrive.</string>
+    <string name="AllowNotificationsScreen__signal_would_like_to_request_the_notification_permission">Kadi would like to request the notification permission. This allows your device to display alerts when new messages arrive.</string>
     <!-- Button label that dismisses the notification permission request without granting it -->
     <string name="AllowNotificationsScreen__not_now">Not now</string>
     <!-- Button label that proceeds with the notification permission request -->

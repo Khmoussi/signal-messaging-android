@@ -51,6 +51,9 @@ import org.thoughtcrime.securesms.database.withAttachments
 import org.thoughtcrime.securesms.dependencies.AppDependencies
 import org.thoughtcrime.securesms.groups.BadGroupIdException
 import org.thoughtcrime.securesms.groups.GroupAccessControl
+import org.thoughtcrime.securesms.tickets.data.TicketsRepository
+import org.thoughtcrime.securesms.tickets.model.TicketAttachment
+import org.thoughtcrime.securesms.tickets.send.TicketHistorySync
 import org.thoughtcrime.securesms.groups.GroupId
 import org.thoughtcrime.securesms.jobs.AttachmentDownloadJob
 import org.thoughtcrime.securesms.jobs.DirectoryRefreshJob
@@ -168,6 +171,14 @@ object DataMessageProcessor {
     var insertResult: InsertResult? = null
     var messageId: MessageId? = null
     SignalTrace.beginSection("DataMessageProcessor#messageInsert")
+
+    val ticketIdRaw = message.ticketId
+    if (!ticketIdRaw.isNullOrBlank()) {
+      handleTicketMessage(envelope, metadata, message, senderRecipient, ticketIdRaw)
+      SignalTrace.endSection()
+      return
+    }
+
     when {
       message.isInvalid -> handleInvalidMessage(context, senderRecipient.id, groupId, envelope.clientTimestamp!!)
       message.isExpirationUpdate -> insertResult = handleExpirationUpdate(envelope, metadata, senderRecipient, threadRecipient.id, groupId, message.expireTimerDuration, message.expireTimerVersion, receivedTime, false)
@@ -1704,5 +1715,70 @@ object DataMessageProcessor {
     } else {
       sticker.data_!!.toPointer(stickerLocator)
     }
+  }
+
+  private fun handleTicketMessage(
+    envelope: Envelope,
+    @Suppress("UNUSED_PARAMETER") metadata: EnvelopeMetadata,
+    message: DataMessage,
+    senderRecipient: Recipient,
+    ticketIdRaw: String
+  ) {
+    val ticketId = runCatching { java.util.UUID.fromString(ticketIdRaw) }.getOrNull()
+    if (ticketId == null) {
+      warn(envelope.clientTimestamp ?: 0L, "Invalid ticketId on data message: $ticketIdRaw")
+      return
+    }
+
+    val rawBody = message.body.orEmpty()
+    val history = TicketHistorySync.tryDecode(rawBody)
+    val body = history?.body ?: rawBody
+    val attachments = message.attachments.toPointersWithinLimit().mapNotNull { attachment ->
+      val location = attachment.remoteLocation ?: return@mapNotNull null
+      val key = attachment.remoteKey ?: return@mapNotNull null
+      TicketAttachment(
+        contentType = attachment.contentType ?: "application/octet-stream",
+        fileName = attachment.fileName,
+        size = attachment.size,
+        cdn = attachment.cdn.cdnNumber,
+        remoteId = location,
+        keyBase64 = key,
+        digestBase64 = attachment.remoteDigest?.let { Base64.encodeWithPadding(it) },
+        voiceNote = attachment.voiceNote
+      )
+    }
+
+    if (body.isBlank() && attachments.isEmpty()) {
+      warn(envelope.clientTimestamp ?: 0L, "Ignoring empty ticket message for $ticketId")
+      return
+    }
+
+    val senderAci = senderRecipient.aci.map { it.rawUuid }.orElse(null)
+    if (senderAci == null) {
+      warn(envelope.clientTimestamp ?: 0L, "Ticket message missing sender ACI")
+      return
+    }
+
+    val authorAci = history?.authorAci ?: senderAci
+    val timestamp = history?.timestampMs ?: (envelope.clientTimestamp ?: System.currentTimeMillis())
+    val isHistorySync = history != null
+    log(
+      timestamp,
+      "Ticket message for $ticketId (attachments=${attachments.size}, historySync=$isHistorySync)"
+    )
+
+    TicketsRepository.ensureTicketCached(ticketId)
+
+    val selfAci = SignalStore.account.aci?.rawUuid
+    TicketsRepository.insertLocalMessage(
+      ticketId = ticketId,
+      authorAci = authorAci,
+      body = body,
+      timestampMs = timestamp,
+      isFromSelf = selfAci != null && authorAci == selfAci,
+      messageId = "${ticketId}_$timestamp",
+      attachments = attachments,
+      touchActivity = !isHistorySync
+    )
   }
 }

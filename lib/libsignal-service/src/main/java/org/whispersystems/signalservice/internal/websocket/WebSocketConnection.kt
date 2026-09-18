@@ -48,7 +48,7 @@ interface WebSocketConnection {
   fun sendRequest(request: WebSocketRequestMessage, timeoutSeconds: Long): Single<WebsocketResponse>
 
   suspend fun sendRequestSuspend(request: WebSocketRequestMessage, timeout: Duration = DEFAULT_SEND_TIMEOUT): WebsocketResponse {
-    throw UnsupportedOperationException("This connection does not support suspend sendRequest")
+    return sendRequest(request, timeout.inWholeSeconds).blockingGet()
   }
 
   @Throws(IOException::class)

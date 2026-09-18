@@ -24,6 +24,8 @@ import org.whispersystems.signalservice.api.keys.KeysApi
 import org.whispersystems.signalservice.api.message.MessageApi
 import org.whispersystems.signalservice.api.profiles.ProfileApi
 import org.whispersystems.signalservice.api.storage.StorageServiceApi
+import org.whispersystems.signalservice.api.tickets.TicketApi
+import org.whispersystems.signalservice.api.directory.LocalDirectoryApi
 
 /**
  * A convenient way to access network operations, similar to [org.thoughtcrime.securesms.database.SignalDatabase] and [org.thoughtcrime.securesms.keyvalue.SignalStore].
@@ -102,4 +104,10 @@ object SignalNetwork {
 
   val keyTransparency: KeyTransparencyApi
     get() = AppDependencies.keyTransparencyApi
+
+  val tickets: TicketApi
+    get() = AppDependencies.ticketApi
+
+  val localDirectory: LocalDirectoryApi
+    get() = AppDependencies.localDirectoryApi
 }

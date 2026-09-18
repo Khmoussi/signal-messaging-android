@@ -64,6 +64,19 @@ fun WebSocketRequestMessage.Companion.put(path: String, body: Any, headers: Map<
 }
 
 /**
+ * Create a basic PATCH web socket request, where body is JSON-ified.
+ */
+fun WebSocketRequestMessage.Companion.patch(path: String, body: Any?, headers: Map<String, String> = emptyMap()): WebSocketRequestMessage {
+  return WebSocketRequestMessage(
+    verb = "PATCH",
+    path = path,
+    body = body?.let { JsonUtil.toJsonByteString(it) },
+    headers = (if (body != null) listOf("content-type:application/json") else emptyList()) + headers.toHeaderList(),
+    id = SecureRandom().nextLong()
+  )
+}
+
+/**
  * Create a custom PUT web socket request, where body and content type header are provided by caller.
  */
 fun WebSocketRequestMessage.Companion.putCustom(path: String, body: ByteArray, headers: Map<String, String>): WebSocketRequestMessage {

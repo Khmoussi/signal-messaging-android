@@ -4,8 +4,7 @@
     <string name="AccountLockedScreen__learn_more_url" translatable="false">https://support.signal.org/hc/articles/360007059792</string>
 
     <string name="RegistrationActivity_take_privacy_with_you_be_yourself_in_every_message">உங்களுடன் தனியுரிமையைப் பெறுங்கள். ஒவ்வொரு செய்தியிலும் நீங்கள் நீங்கலாய் இருங்கள் .</string>
-    <!-- Non-English translations should use "Signal is a nonprofit" instead, dropping the 501c3 reference. -->
-    <string name="RegistrationActivity_terms_and_privacy">சிக்னல் ஓர் இலாப நோக்கற்ற அமைப்பாகும்\nவிதிமுறைகள் &amp; தனியுரிமைக் கொள்கை</string>
+    <string name="RegistrationActivity_terms_and_privacy">Terms &amp; Privacy Policy</string>
     <string name="RegistrationActivity_continue">தொடர்</string>
     <!-- Screen title for restoring or transfering account -->
     <string name="registration_activity__restore_or_transfer">மீட்டெடு அல்லது இடமாற்று</string>

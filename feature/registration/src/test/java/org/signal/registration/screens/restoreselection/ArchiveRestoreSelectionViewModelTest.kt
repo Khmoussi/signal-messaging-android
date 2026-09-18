@@ -193,34 +193,30 @@ class ArchiveRestoreSelectionViewModelTest {
   }
 
   @Test
-  fun `ConfirmSkip post-registration when not storage capable navigates to PinCreate and clears dialog`() = runTest {
+  fun `ConfirmSkip post-registration when not storage capable completes registration without PIN and clears dialog`() = runTest {
     val viewModel = createViewModel(registeredState = RegisteredState.RegisteredAndPinUnknown)
     val initialState = ArchiveRestoreSelectionState(showSkipWarningDialog = true, storageCapable = false)
 
     viewModel.applyEvent(initialState, ArchiveRestoreSelectionScreenEvents.ConfirmSkip, stateEmitter)
 
     coVerify { mockRepository.setRestoreDecision(RestoreDecision.SKIPPED) }
+    coVerify { mockRepository.setPinOptedOut() }
     assertThat(emittedParentEvents).hasSize(1)
-    assertThat(emittedParentEvents.first())
-      .isInstanceOf<RegistrationFlowEvent.NavigateToScreen>()
-      .prop(RegistrationFlowEvent.NavigateToScreen::route)
-      .isEqualTo(RegistrationRoute.PinCreate)
+    assertThat(emittedParentEvents.first()).isEqualTo(RegistrationFlowEvent.RegistrationComplete)
     assertThat(emittedStates.last().showSkipWarningDialog).isFalse()
   }
 
   @Test
-  fun `ConfirmSkip post-registration when storage capable navigates to PinEntryForSvrRestore and clears dialog`() = runTest {
+  fun `ConfirmSkip post-registration when storage capable completes registration without PIN and clears dialog`() = runTest {
     val viewModel = createViewModel(registeredState = RegisteredState.RegisteredAndPinUnknown)
     val initialState = ArchiveRestoreSelectionState(showSkipWarningDialog = true, storageCapable = true)
 
     viewModel.applyEvent(initialState, ArchiveRestoreSelectionScreenEvents.ConfirmSkip, stateEmitter)
 
     coVerify { mockRepository.setRestoreDecision(RestoreDecision.SKIPPED) }
+    coVerify { mockRepository.setPinOptedOut() }
     assertThat(emittedParentEvents).hasSize(1)
-    assertThat(emittedParentEvents.first())
-      .isInstanceOf<RegistrationFlowEvent.NavigateToScreen>()
-      .prop(RegistrationFlowEvent.NavigateToScreen::route)
-      .isEqualTo(RegistrationRoute.PinEntryForSvrRestore)
+    assertThat(emittedParentEvents.first()).isEqualTo(RegistrationFlowEvent.RegistrationComplete)
     assertThat(emittedStates.last().showSkipWarningDialog).isFalse()
   }
 

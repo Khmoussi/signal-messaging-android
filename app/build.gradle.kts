@@ -52,6 +52,19 @@ val languagesForBuildConfigProvider = languagesProvider.map { languages ->
   languages.joinToString(separator = ", ") { language -> "\"$language\"" }
 }
 
+// Self-hosted / local chat server (replaces https://chat.signal.org).
+// - Local test-server (emulator): http://10.0.2.2:8080  → host machine localhost:8080
+// - Local test-server (physical device): http://<your-LAN-IP>:8080
+// - Deployed self-host: https://chat.xrp.ing
+val useSelfHostedSignalServer = true
+val selfHostedSignalUrl = "https://chat.xrp.ing"
+// Must match the server's unidentifiedDelivery certificate trust root.
+// Local test.yml / test-secrets-bundle.yml: BS/lfaNHzWJDFSjarF+7KQcw//aEr8TPwu2QmV9Yyzt0
+// Wrong roots → sealed-sender decrypt fails and inbound messages are silently dropped.
+val selfHostedUnidentifiedSenderTrustRoots =
+  """new String[]{ "BS/lfaNHzWJDFSjarF+7KQcw//aEr8TPwu2QmV9Yyzt0" }"""
+
+
 val localPropertiesFile = File(rootProject.projectDir, "local.properties")
 val localProperties: Properties? = if (localPropertiesFile.exists()) {
   Properties().apply { localPropertiesFile.inputStream().use { load(it) } }
@@ -233,6 +246,9 @@ android {
     versionCode = (canonicalVersionCode * maxHotfixVersions) + possibleHotfixVersions[currentHotfixVersion]
     versionName = canonicalVersionName
 
+    // Distinct from official Signal (org.thoughtcrime.securesms) so both can be installed.
+    applicationId = "com.kadi.app"
+
     if (isInstrumentationTestRun) {
       applicationIdSuffix = ".test_run"
     }
@@ -241,17 +257,39 @@ android {
     targetSdk = libs.versions.targetSdk.get().toInt()
 
     vectorDrawables.useSupportLibrary = true
-    project.ext.set("archivesBaseName", "Signal")
+    project.ext.set("archivesBaseName", "Kadi")
 
     manifestPlaceholders["mapsKey"] = "AIzaSyCSx9xea86GwDKGznCAULE9Y5a8b-TfN9U"
+    // Allow http:// SIGNAL_URL for local test-server (emulator 10.0.2.2 / device LAN IP).
+    manifestPlaceholders["usesCleartextTraffic"] =
+      if (useSelfHostedSignalServer && selfHostedSignalUrl.startsWith("http://")) "true" else "false"
 
     buildConfigField("long", "BUILD_TIMESTAMP", getLastCommitTimestamp() + "L")
     buildConfigField("String", "GIT_HASH", "\"${getGitHash()}\"")
-    buildConfigField("String", "SIGNAL_URL", "\"https://chat.signal.org\"")
+    buildConfigField("boolean", "USE_SELF_HOSTED_SIGNAL_SERVER", "$useSelfHostedSignalServer")
+    buildConfigField(
+      "String",
+      "SIGNAL_URL",
+      if (useSelfHostedSignalServer) "\"$selfHostedSignalUrl\"" else "\"https://chat.signal.org\""
+    )
     buildConfigField("String", "STORAGE_URL", "\"https://storage.signal.org\"")
-    buildConfigField("String", "SIGNAL_CDN_URL", "\"https://cdn.signal.org\"")
-    buildConfigField("String", "SIGNAL_CDN2_URL", "\"https://cdn2.signal.org\"")
-    buildConfigField("String", "SIGNAL_CDN3_URL", "\"https://cdn3.signal.org\"")
+    // In-server media MVP: CDN hosts are the chat server (AttachmentMediaController).
+    // Point CDN0/2/3 at SIGNAL_URL when self-hosting; leave production CDNs otherwise.
+    buildConfigField(
+      "String",
+      "SIGNAL_CDN_URL",
+      if (useSelfHostedSignalServer) "\"$selfHostedSignalUrl\"" else "\"https://cdn.signal.org\""
+    )
+    buildConfigField(
+      "String",
+      "SIGNAL_CDN2_URL",
+      if (useSelfHostedSignalServer) "\"$selfHostedSignalUrl\"" else "\"https://cdn2.signal.org\""
+    )
+    buildConfigField(
+      "String",
+      "SIGNAL_CDN3_URL",
+      if (useSelfHostedSignalServer) "\"$selfHostedSignalUrl\"" else "\"https://cdn3.signal.org\""
+    )
     buildConfigField("String", "SIGNAL_CDSI_URL", "\"https://cdsi.signal.org\"")
     buildConfigField("String", "SIGNAL_SERVICE_STATUS_URL", "\"uptime.signal.org\"")
     buildConfigField("String", "SIGNAL_SVR2_URL", "\"https://svr2.signal.org\"")
@@ -261,11 +299,32 @@ android {
     buildConfigField("String[]", "SIGNAL_SFU_INTERNAL_URLS", "new String[]{\"https://sfu.test.voip.signal.org\", \"https://sfu.staging.voip.signal.org\", \"https://sfu.staging.test.voip.signal.org\"}")
     buildConfigField("String", "CONTENT_PROXY_HOST", "\"contentproxy.signal.org\"")
     buildConfigField("int", "CONTENT_PROXY_PORT", "443")
-    buildConfigField("String[]", "SIGNAL_SERVICE_IPS", rootProject.extra["service_ips"] as String)
-    buildConfigField("String[]", "SIGNAL_STORAGE_IPS", rootProject.extra["storage_ips"] as String)
-    buildConfigField("String[]", "SIGNAL_CDN_IPS", rootProject.extra["cdn_ips"] as String)
-    buildConfigField("String[]", "SIGNAL_CDN2_IPS", rootProject.extra["cdn2_ips"] as String)
-    buildConfigField("String[]", "SIGNAL_CDN3_IPS", rootProject.extra["cdn3_ips"] as String)
+    // Do not pin Signal's static IPs when pointing at a custom host (e.g. chat.xrp.ing).
+    buildConfigField(
+      "String[]",
+      "SIGNAL_SERVICE_IPS",
+      if (useSelfHostedSignalServer) "new String[]{}" else rootProject.extra["service_ips"] as String
+    )
+    buildConfigField(
+      "String[]",
+      "SIGNAL_STORAGE_IPS",
+      if (useSelfHostedSignalServer) "new String[]{}" else rootProject.extra["storage_ips"] as String
+    )
+    buildConfigField(
+      "String[]",
+      "SIGNAL_CDN_IPS",
+      if (useSelfHostedSignalServer) "new String[]{}" else rootProject.extra["cdn_ips"] as String
+    )
+    buildConfigField(
+      "String[]",
+      "SIGNAL_CDN2_IPS",
+      if (useSelfHostedSignalServer) "new String[]{}" else rootProject.extra["cdn2_ips"] as String
+    )
+    buildConfigField(
+      "String[]",
+      "SIGNAL_CDN3_IPS",
+      if (useSelfHostedSignalServer) "new String[]{}" else rootProject.extra["cdn3_ips"] as String
+    )
     buildConfigField("String[]", "SIGNAL_SFU_IPS", rootProject.extra["sfu_ips"] as String)
     buildConfigField("String[]", "SIGNAL_CONTENT_PROXY_IPS", rootProject.extra["content_proxy_ips"] as String)
     buildConfigField("String[]", "SIGNAL_CDSI_IPS", rootProject.extra["cdsi_ips"] as String)
@@ -273,7 +332,15 @@ android {
     buildConfigField("String", "SIGNAL_AGENT", "\"OWA\"")
     buildConfigField("String", "SVR2_MRENCLAVE_LEGACY", "\"1240acbd4aa26974184844c8a46b1022d3957ac8a76c1fd8f5b1a15141ee0708\"")
     buildConfigField("String", "SVR2_MRENCLAVE", "\"ced8217b26228e4b210c985786999d095c4958a94faf37b14acaf25c4cbb02a4\"")
-    buildConfigField("String[]", "UNIDENTIFIED_SENDER_TRUST_ROOTS", "new String[]{ \"BXu6QIKVz5MA8gstzfOgRQGqyLqOwNKHL6INkv3IHWMF\", \"BUkY0I+9+oPgDCn4+Ac6Iu813yvqkDr/ga8DzLxFxuk6\"}")
+    buildConfigField(
+      "String[]",
+      "UNIDENTIFIED_SENDER_TRUST_ROOTS",
+      if (useSelfHostedSignalServer) {
+        selfHostedUnidentifiedSenderTrustRoots
+      } else {
+        "new String[]{ \"BXu6QIKVz5MA8gstzfOgRQGqyLqOwNKHL6INkv3IHWMF\", \"BUkY0I+9+oPgDCn4+Ac6Iu813yvqkDr/ga8DzLxFxuk6\"}"
+      }
+    )
     buildConfigField("String", "ZKGROUP_SERVER_PUBLIC_PARAMS", "\"AMhf5ywVwITZMsff/eCyudZx9JDmkkkbV6PInzG4p8x3VqVJSFiMvnvlEKWuRob/1eaIetR31IYeAbm0NdOuHH8Qi+Rexi1wLlpzIo1gstHWBfZzy1+qHRV5A4TqPp15YzBPm0WSggW6PbSn+F4lf57VCnHF7p8SvzAA2ZZJPYJURt8X7bbg+H3i+PEjH9DXItNEqs2sNcug37xZQDLm7X36nOoGPs54XsEGzPdEV+itQNGUFEjY6X9Uv+Acuks7NpyGvCoKxGwgKgE5XyJ+nNKlyHHOLb6N1NuHyBrZrgtY/JYJHRooo5CEqYKBqdFnmbTVGEkCvJKxLnjwKWf+fEPoWeQFj5ObDjcKMZf2Jm2Ae69x+ikU5gBXsRmoF94GXTLfN0/vLt98KDPnxwAQL9j5V1jGOY8jQl6MLxEs56cwXN0dqCnImzVH3TZT1cJ8SW1BRX6qIVxEzjsSGx3yxF3suAilPMqGRp4ffyopjMD1JXiKR2RwLKzizUe5e8XyGOy9fplzhw3jVzTRyUZTRSZKkMLWcQ/gv0E4aONNqs4P+NameAZYOD12qRkxosQQP5uux6B2nRyZ7sAV54DgFyLiRcq1FvwKw2EPQdk4HDoePrO/RNUbyNddnM/mMgj4FW65xCoT1LmjrIjsv/Ggdlx46ueczhMgtBunx1/w8k8V+l8LVZ8gAT6wkU5J+DPQalQguMg12Jzug3q4TbdHiGCmD9EunCwOmsLuLJkz6EcSYXtrlDEnAM+hicw7iergYLLlMXpfTdGxJCWJmP4zqUFeTTmsmhsjGBt7NiEB/9pFFEB3pSbf4iiUukw63Eo8Aqnf4iwob6X1QviCWuc8t0LUlT9vALgh/f2DPVOOmR0RW6bgRvc7DSF20V/omg+YBw==\"")
     buildConfigField("String", "GENERIC_SERVER_PUBLIC_PARAMS", "\"AByD873dTilmOSG0TjKrvpeaKEsUmIO8Vx9BeMmftwUs9v7ikPwM8P3OHyT0+X3EUMZrSe9VUp26Wai51Q9I8mdk0hX/yo7CeFGJyzoOqn8e/i4Ygbn5HoAyXJx5eXfIbqpc0bIxzju4H/HOQeOpt6h742qii5u/cbwOhFZCsMIbElZTaeU+BWMBQiZHIGHT5IE0qCordQKZ5iPZom0HeFa8Yq0ShuEyAl0WINBiY6xE3H/9WnvzXBbMuuk//eRxXgzO8ieCeK8FwQNxbfXqZm6Ro1cMhCOF3u7xoX83QhpN\"")
     buildConfigField("String", "BACKUP_SERVER_PUBLIC_PARAMS", "\"AJwNSU55fsFCbgaxGRD11wO1juAs8Yr5GF8FPlGzzvdJJIKH5/4CC7ZJSOe3yL2vturVaRU2Cx0n751Vt8wkj1bozK3CBV1UokxV09GWf+hdVImLGjXGYLLhnI1J2TWEe7iWHyb553EEnRb5oxr9n3lUbNAJuRmFM7hrr0Al0F0wrDD4S8lo2mGaXe0MJCOM166F8oYRQqpFeEHfiLnxA1O8ZLh7vMdv4g9jI5phpRBTsJ5IjiJrWeP0zdIGHEssUeprDZ9OUJ14m0v61eYJMKsf59Bn+mAT2a7YfB+Don9O\"")
@@ -295,8 +362,19 @@ android {
     buildConfigField("boolean", "TRACING_ENABLED", "false")
     buildConfigField("boolean", "LINK_DEVICE_UX_ENABLED", "false")
 
+    // Optional faster/local builds: ./gradlew assemblePlayProdDebug -PabiFilter=arm64-v8a
+    val selectedAbis: List<String> = if (project.hasProperty("abiFilter")) {
+      (project.property("abiFilter") as String).split(",").map { it.trim() }.filter { it.isNotEmpty() }
+    } else {
+      listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+    }
+    val filteringAbis = project.hasProperty("abiFilter")
+
     ndk {
-      abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+      // AGP forbids ndk.abiFilters overlapping splits.abi when filtering; splits alone is enough.
+      if (!filteringAbis) {
+        abiFilters += selectedAbis
+      }
     }
     resourceConfigurations += listOf()
 
@@ -304,8 +382,9 @@ android {
       abi {
         isEnable = !project.hasProperty("generateBaselineProfile")
         reset()
-        include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-        isUniversalApk = true
+        include(*selectedAbis.toTypedArray())
+        // Skip the huge universal APK when filtering to a single ABI.
+        isUniversalApk = !filteringAbis
       }
     }
 
@@ -729,6 +808,7 @@ dependencies {
   implementation(libs.androidx.autofill)
   implementation(libs.androidx.biometric)
   implementation(libs.androidx.core.telecom)
+  implementation(libs.androidx.core.splashscreen)
   implementation(libs.androidx.sharetarget)
   implementation(libs.androidx.profileinstaller)
   implementation(libs.androidx.asynclayoutinflater)

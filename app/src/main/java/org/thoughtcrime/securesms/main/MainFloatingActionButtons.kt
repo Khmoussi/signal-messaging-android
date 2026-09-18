@@ -189,6 +189,10 @@ private fun PrimaryActionButton(
   MainFloatingActionButton(
     onClick = onClick,
     shadowElevation = elevation,
+    colors = IconButtonDefaults.filledTonalIconButtonColors(
+      containerColor = MaterialTheme.colorScheme.primary,
+      contentColor = MaterialTheme.colorScheme.onPrimary
+    ),
     icon = {
       AnimatedContent(destination) { targetState ->
         val (icon, contentDescriptionId) = when (targetState) {

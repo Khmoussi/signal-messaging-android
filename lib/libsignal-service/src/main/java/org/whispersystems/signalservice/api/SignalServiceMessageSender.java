@@ -439,6 +439,21 @@ public class SignalServiceMessageSender {
   }
 
   /**
+   * Encrypt a data message for a single destination without sending.
+   * Used by ticket-aware fan-out ({@code PUT /v1/tickets/{id}/messages}).
+   */
+  public OutgoingPushMessageList encryptDataMessage(SignalServiceAddress recipient,
+                                                    SignalServiceDataMessage message,
+                                                    boolean online,
+                                                    boolean urgent)
+      throws UntrustedIdentityException, IOException, NoSessionException, InvalidKeyException
+  {
+    Content content = createMessageContent(message);
+    EnvelopeContent envelopeContent = EnvelopeContent.encrypted(content, ContentHint.DEFAULT, Optional.empty());
+    return getEncryptedMessages(recipient, null, message.getTimestamp(), envelopeContent, online, urgent, false);
+  }
+
+  /**
    * Send an edit message to a single recipient.
    */
   public SendMessageResult sendEditMessage(SignalServiceAddress recipient,
@@ -1287,6 +1302,10 @@ public class SignalServiceMessageSender {
                                .targetAuthorAciBinary(adminDelete.getTargetAuthor().toByteString())
                                .targetSentTimestamp(adminDelete.getTargetSentTimestamp())
                                .build());
+    }
+
+    if (message.getTicketId().isPresent()) {
+      builder.ticketId(message.getTicketId().get());
     }
 
     builder.timestamp(message.getTimestamp());

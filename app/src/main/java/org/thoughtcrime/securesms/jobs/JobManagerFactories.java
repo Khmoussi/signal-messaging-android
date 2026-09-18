@@ -201,6 +201,8 @@ public final class JobManagerFactories {
       put(InAppPaymentStripeRecurringSetupJob.KEY,     new InAppPaymentStripeRecurringSetupJob.Factory());
       put(IndividualSendJob.KEY,                       new IndividualSendJob.Factory());
       put(IndividualSendJobV2.KEY,                     new IndividualSendJobV2.Factory());
+      put(TicketSendJob.KEY,                           new TicketSendJob.Factory());
+      put(TicketHistorySyncJob.KEY,                    new TicketHistorySyncJob.Factory());
       put(LeaveGroupV2Job.KEY,                         new LeaveGroupV2Job.Factory());
       put(LeaveGroupV2WorkerJob.KEY,                   new LeaveGroupV2WorkerJob.Factory());
       put(LinkedDeviceInactiveCheckJob.KEY,            new LinkedDeviceInactiveCheckJob.Factory());

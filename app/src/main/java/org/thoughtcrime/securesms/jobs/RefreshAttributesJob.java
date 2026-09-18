@@ -10,6 +10,7 @@ import org.signal.core.util.crypto.DeviceNameCipher;
 import org.signal.core.util.logging.Log;
 import org.signal.network.exceptions.NonSuccessfulResponseCodeException;
 import org.thoughtcrime.securesms.AppCapabilities;
+import org.thoughtcrime.securesms.BuildConfig;
 import org.thoughtcrime.securesms.crypto.ProfileKeyUtil;
 import org.thoughtcrime.securesms.jobmanager.Job;
 import org.thoughtcrime.securesms.jobmanager.JsonJobData;
@@ -117,7 +118,9 @@ public class RefreshAttributesJob extends BaseJob {
 
   private void setPrimaryDeviceAttributes(@NonNull SvrValues svrValues, @NonNull AccountAttributes.Capabilities capabilities) throws IOException {
     int       registrationId              = SignalStore.account().getRegistrationId();
-    boolean   fetchesMessages             = !SignalStore.account().isFcmEnabled() || SignalStore.settings().getForceWebsocketMode().isEnabled();
+    boolean   fetchesMessages             = !SignalStore.account().isFcmEnabled()
+                                            || SignalStore.settings().getForceWebsocketMode().isEnabled()
+                                            || BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER;
     byte[]    unidentifiedAccessKey       = UnidentifiedAccess.deriveAccessKeyFrom(ProfileKeyUtil.getSelfProfileKey());
     boolean   universalUnidentifiedAccess = TextSecurePreferences.isUniversalUnidentifiedAccess(context);
     String    registrationLockV2          = null;

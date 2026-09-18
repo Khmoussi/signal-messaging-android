@@ -441,7 +441,9 @@ message DataMessage {
   optional PinMessage pinMessage = 27;
   optional UnpinMessage unpinMessage = 28;
   optional AdminDelete adminDelete = 29;
-  // NEXT ID: 30
+  // Fork: ticket discussion binding (opaque E2E chat routed into ticket UI)
+  optional string ticketId = 30;
+  // NEXT ID: 31
 }
 
 message NullMessage {

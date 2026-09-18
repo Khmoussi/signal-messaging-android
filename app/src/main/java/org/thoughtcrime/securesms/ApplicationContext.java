@@ -473,6 +473,12 @@ public class ApplicationContext extends Application implements AppForegroundObse
       return;
     }
 
+    // Self-host cannot deliver FCM wakes. Tell the server we fetch over websocket and keep attributes in sync.
+    if (BuildConfig.USE_SELF_HOSTED_SIGNAL_SERVER) {
+      Log.i(TAG, "Self-hosted server: refreshing account attributes for websocket fetch mode.");
+      AppDependencies.getJobManager().add(new RefreshAttributesJob(false));
+    }
+
     PlayServicesUtil.PlayServicesStatus playServicesStatus = PlayServicesUtil.getPlayServicesStatus(this);
 
     if (playServicesStatus == PlayServicesUtil.PlayServicesStatus.SUCCESS && !SignalStore.account().isFcmEnabled()) {
